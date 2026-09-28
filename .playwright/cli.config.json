@@ -1,0 +1,6 @@
+{
+  "browser": {
+    "browserName": "chromium",
+    "launchOptions": { "executablePath": "/opt/pw-browsers/chromium", "chromiumSandbox": false }
+  }
+}
