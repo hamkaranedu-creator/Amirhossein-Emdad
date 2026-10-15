@@ -280,13 +280,13 @@ button:focus-visible{outline:2px solid var(--c2);outline-offset:4px}
 .node.on .ni{background:none;color:#fff}
 .node .nn{font-size:21px;text-align:center;line-height:1.25}
 .hub::before,.hub::after{display:none}
-.hub svg{position:absolute;left:-90px;top:-90px;width:330px;height:330px;overflow:visible}
+.hub svg{position:absolute;inset:auto;right:auto;bottom:auto;left:-90px;top:-90px;width:330px;height:330px;overflow:visible}
 .hub .hx{fill:none;stroke:rgba(203,73,178,.55);stroke-width:1.5;animation:hxs 36s linear infinite}
 .hub .hx.b{stroke:rgba(238,115,69,.4);stroke-dasharray:5 9;animation-direction:reverse;animation-duration:48s}
 .hub .hx.p{stroke:rgba(203,73,178,.8);animation:hxp 3.6s ease-out infinite}
 @keyframes hxs{to{transform:rotate(360deg)}}
 @keyframes hxp{from{transform:scale(.55);opacity:.9}to{transform:scale(1.35);opacity:0}}
-.hero-net{position:absolute;left:50%;top:50%;width:780px;height:624px;margin:-312px 0 0 -390px;z-index:-1;opacity:.55;overflow:visible}
+.hero-net{position:absolute;left:50%;top:50%;width:780px;height:624px;margin:-312px 0 0 -390px;z-index:-1;opacity:.3;overflow:visible}
 .hero-net .ln{fill:none;stroke:rgba(238,115,69,.6);stroke-width:1.4;stroke-dasharray:1;stroke-dashoffset:1;transition:stroke-dashoffset 1.2s var(--ease) .25s}
 .hero-net .rec{stroke:rgba(249,239,236,.3);stroke-dashoffset:0;transition:stroke-dashoffset .9s var(--ease)}
 .morph[data-state="act"] .hero-net .ln{stroke-dashoffset:0}
@@ -578,7 +578,7 @@ defineSlide('s-ladder', S=>{
    اسلاید ۴: شبکهٔ Agentها
    ===================================================================== */
 defineSlide('s-agents', S=>{
-  const net=S.$('#net'), A=DATA.agents, W=1060, H=680, cx=W/2, cy=H/2+4, rx=355, ry=262;
+  const net=S.$('#net'), A=DATA.agents, W=1060, H=680, cx=W/2, cy=H/2+4, rx=355, ry=238;
   const pos=A.map((_,i)=>{ const a=(-90-i*60)*Math.PI/180; return {x:cx+rx*Math.cos(a), y:cy+ry*Math.sin(a)}; });
   const NS='http://www.w3.org/2000/svg';
   const svg=document.createElementNS(NS,'svg'); svg.setAttribute('viewBox',`0 0 ${W} ${H}`);
