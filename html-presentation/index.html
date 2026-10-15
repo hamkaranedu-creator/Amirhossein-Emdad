@@ -453,30 +453,6 @@ const ICONS = {
 const registry = {};
 function defineSlide(id, factory){ registry[id] = factory; }
 
-const slides = $$('.slide').map(sec=>{
-  const timers = {};
-  const S = {
-    el: sec,
-    $:(s)=>$(s,sec), $$:(s)=>$$(s,sec),
-    /* تایمر گروه‌بندی‌شده؛ با خروج از اسلاید همه پاک می‌شوند */
-    later(fn,ms,g='m'){ const h=setTimeout(fn, REDUCE?Math.min(ms,60):ms); (timers[g]=timers[g]||[]).push(h); return h; },
-    every(fn,ms,g='m'){ const h=setInterval(fn,ms); (timers[g]=timers[g]||[]).push(h); return h; },
-    clear(g){ (g?[g]:Object.keys(timers)).forEach(k=>{ (timers[k]||[]).forEach(h=>{clearTimeout(h);clearInterval(h);}); timers[k]=[]; }); },
-    type(node,text,ms,done,g='sel'){
-      node.textContent=''; node.classList.add('typing'); let i=0;
-      (function step(){ i++; node.textContent=text.slice(0,i);
-        if(i<text.length) S.later(step,ms,g); else { node.classList.remove('typing'); done&&done(); } })();
-    },
-    /* مختصات یک عنصر در دستگاه مختصات صحنهٔ ۱۹۲۰×۱۰۸۰ */
-    center(node){ const r=node.getBoundingClientRect(), sr=stage.getBoundingClientRect(), k=sr.width/1920;
-      return {x:(r.left+r.width/2-sr.left)/k, y:(r.top+r.height/2-sr.top)/k}; }
-  };
-  const api = (registry[sec.id] ? registry[sec.id](S) : null) || {};
-  return {el:sec, S, api};
-});
-/* شماره‌دهی خودکار ظهور پلکانی */
-slides.forEach(s=>$$('[data-r]',s.el).forEach((n,i)=>n.style.setProperty('--i',i)));
-
 /* =====================================================================
    اسلاید ۱: مورف ثبت‌کردن → اقدام‌کردن
    ===================================================================== */
@@ -664,6 +640,31 @@ defineSlide('s-gov', S=>{
       $$('.land',S.el).forEach(l=>l.innerHTML='<span>سناریویی هدایت نشده است</span>'); }
   };
 });
+
+/* ساخت اسلایدها پس از ثبت همهٔ defineSlide ها */
+const slides = $$('.slide').map(sec=>{
+  const timers = {};
+  const S = {
+    el: sec,
+    $:(s)=>$(s,sec), $$:(s)=>$$(s,sec),
+    /* تایمر گروه‌بندی‌شده؛ با خروج از اسلاید همه پاک می‌شوند */
+    later(fn,ms,g='m'){ const h=setTimeout(fn, REDUCE?Math.min(ms,60):ms); (timers[g]=timers[g]||[]).push(h); return h; },
+    every(fn,ms,g='m'){ const h=setInterval(fn,ms); (timers[g]=timers[g]||[]).push(h); return h; },
+    clear(g){ (g?[g]:Object.keys(timers)).forEach(k=>{ (timers[k]||[]).forEach(h=>{clearTimeout(h);clearInterval(h);}); timers[k]=[]; }); },
+    type(node,text,ms,done,g='sel'){
+      node.textContent=''; node.classList.add('typing'); let i=0;
+      (function step(){ i++; node.textContent=text.slice(0,i);
+        if(i<text.length) S.later(step,ms,g); else { node.classList.remove('typing'); done&&done(); } })();
+    },
+    /* مختصات یک عنصر در دستگاه مختصات صحنهٔ ۱۹۲۰×۱۰۸۰ */
+    center(node){ const r=node.getBoundingClientRect(), sr=stage.getBoundingClientRect(), k=sr.width/1920;
+      return {x:(r.left+r.width/2-sr.left)/k, y:(r.top+r.height/2-sr.top)/k}; }
+  };
+  const api = (registry[sec.id] ? registry[sec.id](S) : null) || {};
+  return {el:sec, S, api};
+});
+/* شماره‌دهی خودکار ظهور پلکانی */
+slides.forEach(s=>$$('[data-r]',s.el).forEach((n,i)=>n.style.setProperty('--i',i)));
 
 /* =====================================================================
    ناوبری
