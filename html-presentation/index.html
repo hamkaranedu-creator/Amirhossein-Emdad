@@ -145,30 +145,30 @@ button:focus-visible{outline:2px solid var(--c2);outline-offset:4px}
 .step.on{border-color:transparent;background:linear-gradient(120deg,rgba(124,49,145,.55),rgba(233,93,72,.32));box-shadow:0 0 70px -12px rgba(203,73,178,.6)}
 .step.on .n{background:var(--grad);border-color:transparent;color:#fff}
 .step.on .vb{color:var(--tx)}
-.panel{border:1px solid var(--line);border-radius:44px;background:linear-gradient(170deg,rgba(255,255,255,.05),rgba(255,255,255,.015));padding:48px 54px;display:flex;flex-direction:column;gap:26px;min-height:0;position:relative;overflow:hidden}
+.panel{border:1px solid var(--line);border-radius:44px;background:linear-gradient(170deg,rgba(255,255,255,.05),rgba(255,255,255,.015));padding:30px 44px;display:flex;flex-direction:column;gap:12px;min-height:0;position:relative;overflow:hidden}
 .p-head{display:flex;align-items:baseline;gap:22px}
-.p-en{font-size:56px;font-weight:800;direction:ltr}
+.p-en{font-size:50px;font-weight:800;direction:ltr}
 .p-verb{font-size:36px;color:var(--c4);font-weight:600}
-.bubble{border-radius:28px;border:1px solid var(--line);background:rgba(255,255,255,.05);padding:26px 34px}
+.bubble{border-radius:26px;border:1px solid var(--line);background:rgba(255,255,255,.05);padding:16px 30px}
 .bubble .lbl{font-size:22px;color:var(--mut);display:block;margin-bottom:8px}
-.bubble p{margin:0;font-size:40px;line-height:1.65;font-weight:600;min-height:66px}
+.bubble p{margin:0;font-size:34px;line-height:1.5;font-weight:600;min-height:102px}
 .bubble p.typing::after{content:"";display:inline-block;width:4px;height:1.05em;background:var(--c2);margin-inline-start:6px;vertical-align:-.15em;animation:blink .8s steps(2) infinite}
 @keyframes blink{50%{opacity:0}}
-.resp{flex:1;min-height:0;display:flex;flex-direction:column;justify-content:center}
+.resp{flex:1;min-height:0;display:flex;flex-direction:column;justify-content:center;padding:4px 0}
 .does{font-size:38px;line-height:1.6;display:flex;gap:18px;align-items:center;opacity:0;transform:translateY(16px);transition:all .7s var(--ease)}
 .does.show{opacity:1;transform:none}
 .does::before{content:"";width:16px;height:16px;border-radius:50%;background:var(--grad);flex:none;box-shadow:0 0 22px var(--c3)}
-.seq{list-style:none;margin:0;padding:0;display:none;flex-direction:column;gap:16px}
+.seq{list-style:none;margin:0;padding:0;display:none;flex-direction:column;gap:10px}
 .panel[data-mode="agent"] .seq{display:flex}
 .panel[data-mode="agent"] .does-wrap{display:none}
-.seq li{display:flex;align-items:center;gap:22px;font-size:36px;padding:16px 26px;border-radius:22px;border:1px solid var(--line);
+.seq li{display:flex;align-items:center;gap:20px;font-size:30px;padding:5px 22px;border-radius:22px;border:1px solid var(--line);
   opacity:.28;transform:translateX(24px);transition:all .6s var(--ease)}
-.seq li .st{width:44px;height:44px;border-radius:50%;border:3px solid var(--line);flex:none;position:relative;transition:all .4s}
+.seq li .st{width:38px;height:38px;border-radius:50%;border:3px solid var(--line);flex:none;position:relative;transition:all .4s}
 .seq li.run{opacity:1;transform:none;border-color:rgba(238,115,69,.55);background:rgba(238,115,69,.07)}
 .seq li.run .st{border-color:var(--c4) transparent var(--c4) transparent;animation:spin .9s linear infinite}
 .seq li.done{opacity:1;transform:none;border-color:rgba(203,73,178,.4)}
 .seq li.done .st{animation:none;border-color:transparent;background:var(--grad)}
-.seq li.done .st::after{content:"";position:absolute;left:13px;top:6px;width:11px;height:20px;border:solid #fff;border-width:0 4px 4px 0;transform:rotate(45deg)}
+.seq li.done .st::after{content:"";position:absolute;left:11px;top:5px;width:9px;height:17px;border:solid #fff;border-width:0 4px 4px 0;transform:rotate(45deg)}
 .seq li.watch .st{animation:ping 1.6s ease-in-out infinite;border-color:var(--c4)}
 @keyframes spin{to{transform:rotate(360deg)}}
 @keyframes ping{0%,100%{box-shadow:0 0 0 0 rgba(238,115,69,.6)}60%{box-shadow:0 0 0 16px rgba(238,115,69,0)}}
@@ -608,10 +608,13 @@ defineSlide('s-gov', S=>{
     const c=el('button','sc',sc.text); c.addEventListener('click',()=>{ S.clear(); route(i); });
     list.append(c); chips.push(c);
   });
+  let flying=null;
+  function stopFlight(){ if(flying){ flying.an.onfinish=null; flying.an.cancel(); flying.tk.remove(); flying=null; } }
   function route(i){
+    stopFlight();
     const sc=R.scenarios[i], lane=lanes[sc.level], lv=R.levels.find(l=>l.key===sc.level);
     chips.forEach((c,k)=>c.classList.toggle('on',k===i));
-    Object.values(lanes).forEach(l=>l.classList.remove('hit'));
+    Object.values(lanes).forEach(l=>{ l.classList.remove('hit'); S.$('.land',l).innerHTML='<span>سناریویی هدایت نشده است</span>'; });
     Object.values(pillars).forEach(p=>p.classList.remove('lit'));
     const land=S.$('.land',lane), a=S.center(chips[i]), b=S.center(land);
     const tk=el('div','token'); S.el.append(tk);
@@ -621,20 +624,20 @@ defineSlide('s-gov', S=>{
               {transform:`translate(${mid.x}px,${mid.y}px) scale(1.15)`,offset:.6},
               {transform:`translate(${b.x}px,${b.y}px) scale(.9)`,opacity:1}];
     const done=()=>{
-      tk.remove(); lane.classList.add('hit');
+      tk.remove(); flying=null; lane.classList.add('hit');
       land.innerHTML=`<span>${sc.text}</span><span style="color:${lv.color};font-weight:600">← ${lv.act}</span>`;
       land.classList.remove('pane-in'); void land.offsetWidth; land.classList.add('pane-in');
       sc.pillars.forEach(k=>pillars[k].classList.add('lit'));
     };
     const an=tk.animate(kf,{duration:REDUCE?10:1000,easing:'cubic-bezier(.5,0,.2,1)',fill:'forwards'});
-    an.onfinish=done;
+    flying={an,tk}; an.onfinish=done;
   }
   return {
     enter(){
       [0,1,2].forEach(k=>S.later(()=>route(k), 1800+k*3600,'auto'));   // نمایش خودکار: سه سطح ریسک
       chips.forEach(c=>c.addEventListener('pointerdown',()=>S.clear('auto'),{once:false}));
     },
-    leave(){ S.clear(); $$('.token',S.el).forEach(t=>t.remove());
+    leave(){ S.clear(); stopFlight(); $$('.token',S.el).forEach(t=>t.remove());
       chips.forEach(c=>c.classList.remove('on')); Object.values(lanes).forEach(l=>l.classList.remove('hit'));
       Object.values(pillars).forEach(p=>p.classList.remove('lit'));
       $$('.land',S.el).forEach(l=>l.innerHTML='<span>سناریویی هدایت نشده است</span>'); }
@@ -646,7 +649,7 @@ const slides = $$('.slide').map(sec=>{
   const timers = {};
   const S = {
     el: sec,
-    $:(s)=>$(s,sec), $$:(s)=>$$(s,sec),
+    $:(s,r)=>$(s,r||sec), $$:(s,r)=>$$(s,r||sec),
     /* تایمر گروه‌بندی‌شده؛ با خروج از اسلاید همه پاک می‌شوند */
     later(fn,ms,g='m'){ const h=setTimeout(fn, REDUCE?Math.min(ms,60):ms); (timers[g]=timers[g]||[]).push(h); return h; },
     every(fn,ms,g='m'){ const h=setInterval(fn,ms); (timers[g]=timers[g]||[]).push(h); return h; },
