@@ -278,6 +278,13 @@ body.ui #nav{opacity:1}
 .token{position:absolute;left:0;top:0;width:30px;height:30px;margin:-15px 0 0 -15px;clip-path:polygon(50% 0,100% 25%,100% 75%,50% 100%,0 75%,0 25%);
   background:linear-gradient(145deg,#fff,#B58CFF);z-index:20;pointer-events:none;filter:drop-shadow(0 0 14px #B58CFF)}
 
+/* ابزارهای مشترک: منبع پایین اسلاید، جمع‌بندی کوچک، شکستن متوازن خط‌ها، سپاس در اسلاید پایان */
+.src{position:absolute;right:120px;bottom:72px;max-width:660px;font-size:18px;line-height:1.5;color:var(--mut)}
+.takeaway.sm{font-size:28px}
+.takeaway,.hd .h2{text-wrap:balance}
+.cover .thanks{font-size:42px;font-weight:800;margin-top:34px;color:var(--lav)}
+.cover .qa{font-size:28px;color:var(--mut);margin-top:6px}
+
 @media (prefers-reduced-motion:reduce){
   *{animation-duration:.01s!important;animation-iteration-count:1!important;transition-duration:.01s!important;transition-delay:0s!important}
 }
@@ -287,6 +294,7 @@ body.ui #nav{opacity:1}
 <div id="bg"><canvas id="mesh"></canvas></div>
 <svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
   <linearGradient id="gShield" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#6A2FE0"/><stop offset=".6" stop-color="#A850F0"/><stop offset="1" stop-color="#E060E0"/></linearGradient>
+  <linearGradient id="gWish" gradientUnits="userSpaceOnUse" x1="1680" y1="0" x2="0" y2="0"><stop offset="0" stop-color="#C9B2FF"/><stop offset="1" stop-color="#E060E0"/></linearGradient>
 </defs></svg>
 
 <div id="viewport"><div id="stage" data-cover="1">
@@ -492,7 +500,34 @@ const ICONS = {
   check :'<circle cx="24" cy="24" r="18"/><path d="M15 25l6 6 12-13"/>',
   decide:'<path d="M24 44V26M24 26L11 12M24 26l13-14"/><path d="M11 12v9M11 12h9M37 12v9M37 12h-9"/>',
   pulse :'<path d="M3 26h9l5-12 8 22 6-14 4 4h10"/>',
-  agent :'<rect x="9" y="15" width="30" height="24" rx="7"/><circle cx="19" cy="27" r="2.4"/><circle cx="29" cy="27" r="2.4"/><path d="M24 15V9"/><circle cx="24" cy="7" r="2.2"/>'
+  agent :'<rect x="9" y="15" width="30" height="24" rx="7"/><circle cx="19" cy="27" r="2.4"/><circle cx="29" cy="27" r="2.4"/><path d="M24 15V9"/><circle cx="24" cy="7" r="2.2"/>',
+  user  :'<circle cx="24" cy="15" r="8"/><path d="M8 42c1.5-9 7.5-14 16-14s14.5 5 16 14"/>',
+  users :'<circle cx="18" cy="16" r="7"/><path d="M4 40c1-8 6-12 14-12s13 4 14 12"/><circle cx="34" cy="14" r="6"/><path d="M32 26c6 0 11 3 12 10"/>',
+  search:'<circle cx="21" cy="21" r="13"/><path d="M31 31l11 11"/>',
+  clock :'<circle cx="24" cy="24" r="18"/><path d="M24 13v12l8 5"/>',
+  db    :'<ellipse cx="24" cy="11" rx="15" ry="5"/><path d="M9 11v26c0 2.8 6.7 5 15 5s15-2.2 15-5V11"/><path d="M9 24c0 2.8 6.7 5 15 5s15-2.2 15-5"/>',
+  cpu   :'<rect x="13" y="13" width="22" height="22" rx="3"/><rect x="19" y="19" width="10" height="10" rx="1.5"/><path d="M19 7v6M29 7v6M19 35v6M29 35v6M7 19h6M7 29h6M35 19h6M35 29h6"/>',
+  chat  :'<path d="M7 9h34v23H22l-9 8v-8H7z"/><path d="M15 18h18M15 24h11"/>',
+  spark :'<path d="M24 5l4.5 13.5L42 23l-13.5 4.5L24 41l-4.5-13.5L6 23l13.5-4.5z"/>',
+  burst :'<circle cx="24" cy="24" r="5"/><path d="M24 4v8M24 36v8M4 24h8M36 24h8M10 10l5.5 5.5M32.5 32.5L38 38M38 10l-5.5 5.5M15.5 32.5L10 38"/>',
+  alert :'<path d="M24 6L4 41h40z"/><path d="M24 19v10"/><circle cx="24" cy="35" r="1.6"/>',
+  cloud :'<path d="M14 37h21a9 9 0 001.5-17.9A12 12 0 0013.6 17 10 10 0 0014 37z"/>',
+  shield:'<path d="M24 5l16 6v11c0 10-7 18-16 21C15 40 8 32 8 22V11z"/><path d="M17 24l5 5 9-10"/>',
+  refresh:'<path d="M38 19A15 15 0 0011 15M10 29a15 15 0 0027 4"/><path d="M11 6v9h9M37 42v-9h-9"/>',
+  link  :'<path d="M20 28l8-8"/><path d="M22 14l4-4a7 7 0 0110 10l-4 4M26 34l-4 4a7 7 0 01-10-10l4-4"/>',
+  server:'<rect x="9" y="7" width="30" height="14" rx="3"/><rect x="9" y="27" width="30" height="14" rx="3"/><path d="M15 14h3M15 34h3M29 14h4M29 34h4"/>',
+  flag  :'<path d="M12 43V6"/><path d="M12 8h24l-5 7.5 5 7.5H12"/>',
+  book  :'<path d="M24 13c-4-3-10-4-16-3v27c6-1 12 0 16 3 4-3 10-4 16-3V10c-6-1-12 0-16 3z"/><path d="M24 13v27"/>',
+  expand:'<path d="M8 19V8h11M40 29v11H29M8 8l12 12M40 40L28 28M29 8h11v11M19 40H8V29"/>',
+  layers:'<path d="M24 6l18 9-18 9-18-9z"/><path d="M6 24l18 9 18-9M6 33l18 9 18-9"/>',
+  gear  :'<circle cx="24" cy="24" r="7"/><path d="M24 5v7M24 36v7M5 24h7M36 24h7M10.6 10.6l5 5M32.4 32.4l5 5M37.4 10.6l-5 5M15.6 32.4l-5 5"/>',
+  x     :'<circle cx="24" cy="24" r="18"/><path d="M17 17l14 14M31 17L17 31"/>',
+  bulb  :'<path d="M17 31a12 12 0 1114 0v5H17z"/><path d="M19 41h10M24 22v-4"/>',
+  mic   :'<rect x="18" y="5" width="12" height="23" rx="6"/><path d="M11 22a13 13 0 0026 0M24 35v8M18 43h12"/>',
+  brain :'<path d="M20 8a6 6 0 00-6 6 6 6 0 00-5 9 6 6 0 001 10 6 6 0 0010 5V8zM28 8a6 6 0 016 6 6 6 0 015 9 6 6 0 01-1 10 6 6 0 01-10 5V8z"/>',
+  exit  :'<path d="M28 7H10v34h18"/><path d="M22 24h20M36 18l6 6-6 6"/>',
+  compass:'<circle cx="24" cy="24" r="18"/><path d="M31 17l-4.5 9.5L17 31l4.5-9.5z"/>',
+  rocket:'<path d="M24 5c8 6 10 15 6 25H18C14 20 16 11 24 5z"/><circle cx="24" cy="18" r="3"/><path d="M18 30l-6 6 1-9M30 30l6 6-1-9M21 35l3 7 3-7"/>',
 };
 const HEXP='100,10 188,60 188,160 100,210 12,160 12,60';
 function hxl(icon){
@@ -500,6 +535,14 @@ function hxl(icon){
     <g class="ic" transform="translate(52,58) scale(2)">${ICONS[icon]||''}</g></svg>`;
 }
 const pulseIn = nodes => nodes.forEach(x=>{ x.classList.remove('pane-in'); void x.offsetWidth; x.classList.add('pane-in'); });
+const svgEl=(tag,attrs,parent)=>{ const e=document.createElementNS(NS,tag); if(attrs) for(const k in attrs) e.setAttribute(k,attrs[k]); if(parent) parent.append(e); return e; };
+/* روشن‌کردن پیاپی: عنصر i از گام from+i روشن می‌شود و فقط آخرین، «جاری» است */
+function seq(nodes,n,from=1){ nodes.forEach((x,i)=>{ const lit=n>=from+i; x.classList.toggle('lit',lit); x.classList.toggle('cur',n===from+i); x.querySelectorAll('.hxl').forEach(h=>h.classList.toggle('on',lit)); }); }
+/* شمارش عدد از from تا to */
+function countUp(S,node,from,to,ms,g,suf){ S.clear(g); const t0=performance.now();
+  const tick=()=>{ const p=Math.min(1,(performance.now()-t0)/ms), v=Math.round(from+(to-from)*(1-Math.pow(1-p,3))); node.textContent=fa(v)+(suf||''); if(p>=1) S.clear(g); };
+  tick(); S.every(tick,30,g); }
+const hexPts=r=>[0,1,2,3,4,5].map(k=>{ const a=(-90+60*k)*Math.PI/180; return (r*Math.cos(a)).toFixed(1)+','+(r*Math.sin(a)).toFixed(1); }).join(' ');
 
 const registry = {};
 function defineSlide(id, factory){ registry[id] = factory; }
