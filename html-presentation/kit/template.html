@@ -95,6 +95,15 @@ body.ui #nav{opacity:1}
 #help kbd{background:rgba(255,255,255,.12);border:1px solid var(--hair);border-radius:10px;padding:2px 14px;font-family:inherit;margin:0 6px;display:inline-block;direction:ltr}
 #blank{position:absolute;inset:0;z-index:40;background:#000;display:none}
 #blank.show{display:block}
+/* صدا: دکمهٔ حالت صدا و پیام کوتاه */
+#nav .snd{width:42px;height:42px;border-radius:50%;border:1px solid rgba(255,255,255,.25);display:grid;place-items:center;transition:background .3s}
+#nav .snd:hover{background:rgba(255,255,255,.1)}
+#nav .snd svg{width:22px;height:22px;fill:none;stroke:#fff;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;overflow:visible}
+#nav .snd path,#nav .snd line{transition:opacity .3s}
+#nav .snd[data-mode="1"] .w2,#nav .snd[data-mode="0"] .w1,#nav .snd[data-mode="0"] .w2,#nav .snd:not([data-mode="0"]) .x{opacity:0}
+#toast{position:absolute;left:50%;bottom:112px;z-index:35;transform:translate(-50%,12px);padding:10px 28px;border-radius:40px;font-size:24px;
+  background:rgba(20,8,48,.92);border:1px solid var(--hair);opacity:0;pointer-events:none;transition:opacity .4s,transform .5s var(--ease)}
+#toast.show{opacity:1;transform:translate(-50%,0)}
 #ov{position:absolute;inset:0;z-index:30;background:rgba(8,0,26,.95);display:none;padding:90px 120px}
 #ov.show{display:block}
 #ov h3{font-size:40px;margin:0 0 28px}
@@ -392,11 +401,13 @@ ul.hx li::before{content:"";position:absolute;inset-inline-start:0;top:calc(.75e
   <div id="progress"><i></i></div>
   <div id="steps"></div>
   <div id="clock">00:00</div>
+  <div id="toast" role="status" aria-live="polite"></div>
   <nav id="nav" aria-label="ناوبری اسلاید">
     <button class="arrow" id="prev" aria-label="گام قبلی">→</button>
     <div id="dots"></div>
     <button class="arrow" id="next" aria-label="گام بعدی">←</button>
     <span id="count"></span>
+    <button class="snd" id="snd" aria-label="حالت صدا (S)"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9.5h3.5L12 6v12l-4.5-3.5H4z"/><path class="w1" d="M15.2 9.6a3.4 3.4 0 010 4.8"/><path class="w2" d="M17.8 7.2a6.8 6.8 0 010 9.6"/><g class="x"><line x1="16" y1="9.5" x2="21" y2="14.5"/><line x1="21" y1="9.5" x2="16" y2="14.5"/></g></svg></button>
   </nav>
   <div id="help"><div>
     <h3>میانبرهای ارائه</h3>
@@ -404,6 +415,7 @@ ul.hx li::before{content:"";position:absolute;inset-inline-start:0;top:calc(.75e
     <div><kbd>←</kbd> <kbd>PageUp</kbd> <kbd>Backspace</kbd>: گام قبلی</div>
     <div><kbd>O</kbd>: فهرست اسلایدها · شمارهٔ اسلاید (مثلاً <kbd>1</kbd><kbd>2</kbd>)، <kbd>Home</kbd> یا <kbd>End</kbd>: پرش به اسلاید</div>
     <div><kbd>B</kbd> یا <kbd>.</kbd>: صفحهٔ سیاه · <kbd>T</kbd>: زمان‌سنج (<kbd>Shift+T</kbd> صفر) · <kbd>F</kbd>: تمام‌صفحه · <kbd>D</kbd>: برعکس‌کردن جهت فلش‌ها</div>
+    <div><kbd>S</kbd>: صدا (کامل ← فقط لحظه‌های اصلی ← خاموش)؛ صدا با اولین کلیک فعال می‌شود</div>
     <div>کلیدها با صفحه‌کلید فارسی هم کار می‌کنند. روی عناصر هر اسلاید هم می‌توان کلیک کرد تا مستقیم به همان گام برود.</div>
   </div></div>
   <div id="ov"><h3>فهرست اسلایدها</h3><div class="grid"></div></div>
@@ -551,13 +563,111 @@ function countUp(S,node,from,to,ms,g,suf){ S.clear(g); const t0=performance.now(
   tick(); S.every(tick,30,g); }
 const hexPts=r=>[0,1,2,3,4,5].map(k=>{ const a=(-90+60*k)*Math.PI/180; return (r*Math.cos(a)).toFixed(1)+','+(r*Math.sin(a)).toFixed(1); }).join(' ');
 
+/* =====================================================================
+   صدا: نشانه‌های صوتی ظریف و هم‌گام با حرکت. همه با Web Audio ساخته
+   می‌شوند (بدون فایل صوتی، بدون اینترنت). نت‌ها از گام پنج‌نتی «ر ماژور»اند
+   تا کنار هم همیشه هماهنگ باشند؛ کمی طنین فضا و فیلتر نرم دارند.
+   حالت‌ها با کلید S: ۲ کامل ← ۱ فقط لحظه‌های اصلی ← ۰ خاموش.
+   SFX.play(name, …) از کد اسلاید فقط وقتی o.instant نیست صدا می‌زند:
+     step   هر کلیک (خودکار)؛ زیر شدن با شمارهٔ گام و فرود روی آخرین گام
+     back   گام قبلی (خودکار)
+     slide  عوض شدن اسلاید (خودکار)؛ جهت صدا با جهت حرکت اسلاید
+     chime  هر مرحلهٔ یک فرایند خودکار AI یا رسیدن عدد کلیدی (i: بلندی نت)
+     done   پایان یک فرایند خودکار
+     shimmer فقط دگرگونی جلد
+     resolve «سپاس» در اسلاید پایان
+   ===================================================================== */
+const SFX = (()=>{
+  const KEY = 'deck-sound-mode';
+  const N = [587.33, 659.25, 739.99, 880, 987.77, 1174.66, 1318.51, 1479.98];   /* ر۵ تا فا‌دیز۶ */
+  const CALM = { step:1, back:1 };                                              /* در حالت «فقط لحظه‌های اصلی» بی‌صدا */
+  let mode = 2, ctx = null, bus = null, armed = false, n = 0;
+  try { const v = localStorage.getItem(KEY); if (v === '0' || v === '1' || v === '2') mode = +v; } catch (e) {}
+
+  /* زنجیره: صدا ← فیلتر نرم ← (مستقیم + طنین کوتاه فضا) ← فشرده‌ساز ملایم ← خروجی */
+  function attach(c){
+    ctx = c;
+    const lp = c.createBiquadFilter(), comp = c.createDynamicsCompressor(), pre = c.createDelay(0.1), rev = c.createConvolver(), wet = c.createGain();
+    bus = c.createGain(); bus.gain.value = 1;
+    lp.type = 'lowpass'; lp.frequency.value = 5200; lp.Q.value = 0.4;
+    comp.threshold.value = -18; comp.knee.value = 10; comp.ratio.value = 3; comp.attack.value = 0.004; comp.release.value = 0.3;
+    const len = Math.floor(c.sampleRate * 1.8), ir = c.createBuffer(2, len, c.sampleRate);
+    for (let ch = 0; ch < 2; ch++) { const d = ir.getChannelData(ch); let y = 0;
+      for (let i = 0; i < len; i++) { y += 0.3 * ((Math.random() * 2 - 1) - y); d[i] = y * Math.pow(1 - i / len, 3.4); } }
+    rev.buffer = ir; pre.delayTime.value = 0.018; wet.gain.value = 0.32;
+    bus.connect(lp); lp.connect(comp); lp.connect(pre); pre.connect(rev); rev.connect(wet); wet.connect(comp); comp.connect(c.destination);
+  }
+  function wake(){
+    if (!ctx) { const AC = window.AudioContext || window.webkitAudioContext; if (!AC) return; try { attach(new AC()); } catch (e) { return; } }
+    if (ctx.state === 'suspended' && ctx.resume) ctx.resume().catch(()=>{});
+  }
+  function out(node, pan, t, pan2){
+    if (!ctx.createStereoPanner) { node.connect(bus); return; }
+    const p = ctx.createStereoPanner(); p.pan.setValueAtTime(pan || 0, t);
+    if (pan2 !== undefined) p.pan.linearRampToValueAtTime(pan2, t + 0.6);
+    node.connect(p); p.connect(bus);
+  }
+  function tone(f, t, o){
+    const a = o.a || 0.006, d = o.d || 0.5, osc = ctx.createOscillator(), v = ctx.createGain();
+    osc.type = o.type || 'sine'; osc.frequency.value = f; if (o.det) osc.detune.value = o.det;
+    v.gain.setValueAtTime(0, t); v.gain.linearRampToValueAtTime(o.g, t + a); v.gain.exponentialRampToValueAtTime(0.0001, t + a + d);
+    osc.connect(v); out(v, o.pan, t); osc.start(t); osc.stop(t + a + d + 0.05);
+  }
+  function air(t, dir){                       /* هوای نرم با فیلتر رونده؛ از سمت حرکت اسلاید */
+    const dur = 0.62, len = Math.floor(ctx.sampleRate * dur), b = ctx.createBuffer(1, len, ctx.sampleRate), x = b.getChannelData(0);
+    for (let i = 0; i < len; i++) x[i] = Math.random() * 2 - 1;
+    const s = ctx.createBufferSource(), bp = ctx.createBiquadFilter(), v = ctx.createGain();
+    s.buffer = b; bp.type = 'bandpass'; bp.Q.value = 0.7;
+    bp.frequency.setValueAtTime(dir > 0 ? 420 : 1500, t); bp.frequency.exponentialRampToValueAtTime(dir > 0 ? 1500 : 420, t + dur);
+    v.gain.setValueAtTime(0, t); v.gain.linearRampToValueAtTime(0.05, t + 0.2); v.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+    s.connect(bp); bp.connect(v); out(v, -0.35 * dir, t, 0.35 * dir); s.start(t); s.stop(t + dur + 0.02);
+  }
+  const V = {
+    step(k, last){ const t = ctx.currentTime + 0.005, f = last ? N[5] : N[k <= 5 ? Math.max(0, k - 1) : 3 + (k % 2)];
+      tone(f, t, { d:0.45, g:0.09 }); tone(f * 2, t, { type:'triangle', d:0.14, g:0.012 }); },
+    back(){ const t = ctx.currentTime + 0.005; tone(N[0] / 2, t, { d:0.28, g:0.06 }); },
+    slide(dir){ const t = ctx.currentTime + 0.005; dir = dir < 0 ? -1 : 1;
+      air(t, dir); tone(293.66, t + 0.05, { a:0.08, d:0.7, g:0.028, pan:-0.2 * dir }); tone(440, t + 0.09, { a:0.08, d:0.6, g:0.02, pan:0.2 * dir }); },
+    chime(i){ const t = ctx.currentTime + 0.005, f = N[Math.max(0, Math.min(N.length - 1, i | 0))];
+      tone(f, t, { d:1.1, g:0.07 }); tone(f * 2, t, { d:0.6, g:0.016, det:4 }); tone(f * 3, t, { d:0.3, g:0.005 }); },
+    done(){ const t = ctx.currentTime + 0.005;
+      tone(880, t, { d:0.6, g:0.06 }); tone(1318.51, t + 0.1, { d:1.1, g:0.06 }); tone(2637, t + 0.1, { d:0.4, g:0.006 }); },
+    shimmer(){ const t = ctx.currentTime + 0.005;
+      [587.33, 880, 1174.66, 1479.98].forEach((f, k)=>{ tone(f, t + k * 0.08, { d:1.4, g:0.05, pan:(k - 1.5) * 0.15 }); tone(f * 2, t + k * 0.08, { d:0.5, g:0.008, det:5 }); }); },
+    resolve(){ const t = ctx.currentTime + 0.005;
+      [293.66, 440, 587.33, 739.99].forEach((f, k)=>{ tone(f, t + k * 0.05, { a:0.3, d:2.6, g:0.045, pan:(k - 1.5) * 0.12 }); tone(f * 2, t + k * 0.05, { a:0.3, d:1.4, g:0.006, det:-5 }); }); }
+  };
+  return {
+    get mode(){ return mode; },
+    get n(){ return n; },                     /* شمار درخواست‌ها: موتور با آن می‌فهمد اسلاید خودش صدا زده یا نه */
+    arm(){ armed = true; wake(); },           /* اولین کلیک یا کلید: مرورگرها پیش از آن اجازهٔ پخش نمی‌دهند */
+    attach,
+    play(name, a, b){
+      n++;
+      const bl = document.getElementById('blank');
+      const ok = !!mode && !(mode === 1 && CALM[name]) && armed && !document.hidden && !(bl && bl.classList.contains('show'));
+      try { dispatchEvent(new CustomEvent('sfx', { detail:{ name, a, b, ok } })); } catch (e) {}   /* برای آزمون و ابزارها */
+      if (!ok) return;
+      wake(); if (!ctx || !V[name]) return;
+      try { V[name](a, b); } catch (e) {}
+    },
+    cycle(){
+      mode = (mode + 2) % 3; try { localStorage.setItem(KEY, String(mode)); } catch (e) {}
+      if (mode && armed) { wake(); if (ctx) V.chime(mode === 2 ? 3 : 0); }
+      return mode;
+    }
+  };
+})();
+
 const registry = {};
 function defineSlide(id, factory){ registry[id] = factory; }
 
 /* ۱) جلد */
 defineSlide('s-title', S=>{
   const m=S.$('#morph'), sx=S.$$('.sx');
-  return { steps:3, show(n){ m.dataset.state = n>=1 ? 'act':'record'; sx.forEach(x=>x.classList.toggle('show', n>=2)); } };
+  return { steps:3, show(n,o={}){ const was=m.dataset.state; m.dataset.state = n>=1 ? 'act':'record';
+    if(n>=1&&was!=='act'&&!o.instant) SFX.play('shimmer');
+    sx.forEach(x=>x.classList.toggle('show', n>=2)); } };
 });
 
 /* ۲) سه لایه */
@@ -717,7 +827,7 @@ defineSlide('s-gov', S=>{
       {transform:`translate(${o.x}px,${o.y}px) scale(1.25)`,offset:.5},
       {transform:`translate(${o.x}px,${o.y}px) scale(1.25)`,offset:.6},
       {transform:`translate(${b.x}px,${b.y}px) scale(.8)`,opacity:1}],{duration:1500,easing:'cubic-bezier(.45,0,.25,1)',fill:'forwards'});
-    flying={an,tk}; an.onfinish=()=>{ tk.remove(); flying=null; land(i); };
+    flying={an,tk}; an.onfinish=()=>{ tk.remove(); flying=null; land(i); SFX.play('chime',[4,2,0][k]); };
   }
   return { steps:11,
     leave(){ S.clear(); clearRoute(); $$('.token',S.el).forEach(t=>t.remove()); },
@@ -796,9 +906,11 @@ function paint(){
   if(s.api.steps>1) for(let k=0;k<s.api.steps;k++) stepsEl.append(el('i', k<=s.step ? 'on'+(k===s.step?' cur':'') : ''));
   count.textContent=fa(cur+1)+' / '+fa(slides.length);
 }
-function setStep(idx,k,instant){
-  const s=slides[idx]; k=Math.max(0,Math.min(s.api.steps-1,k)); s.step=k;
+function setStep(idx,k,instant,quiet){
+  const s=slides[idx]; k=Math.max(0,Math.min(s.api.steps-1,k)); const was=s.step, mark=SFX.n; s.step=k;
   s.api.show&&s.api.show(k,{instant:!!instant}); if(idx===cur) paint();
+  /* صدای پیش‌فرض گام، مگر اسلاید خودش صدای خاصی زده باشد */
+  if(!instant&&!quiet&&idx===cur&&k!==was&&SFX.n===mark) SFX.play(k>was?'step':'back',k,k===s.api.steps-1);
 }
 function go(n,dir,landLast){
   n=Math.max(0,Math.min(slides.length-1,n)); if(n===cur) return;
@@ -809,7 +921,8 @@ function go(n,dir,landLast){
   stage.dataset.cover = nx.el.classList.contains('cover') ? '1' : '0';
   $$('button',dots).forEach((b,i)=>b.classList.toggle('on',i===n));
   bar.style.transform=`scaleX(${(n+1)/slides.length})`;
-  setStep(n, landLast ? nx.api.steps-1 : 0, !!landLast);
+  SFX.play('slide',dir);
+  setStep(n, landLast ? nx.api.steps-1 : 0, !!landLast, true);
   try{ history.replaceState(null,'','#'+(n+1)); }catch(e){}
 }
 function next(){ const s=slides[cur]; if(s.step<s.api.steps-1) setStep(cur,s.step+1); else if(cur<slides.length-1) go(cur+1,1); }
@@ -828,6 +941,13 @@ setInterval(()=>{ const s=Math.floor((Date.now()-t0)/1000); clock.textContent=St
 let idleT=0;
 function wake(){ document.body.classList.add('ui'); document.body.classList.remove('idle'); clearTimeout(idleT); idleT=setTimeout(()=>{ document.body.classList.remove('ui'); document.body.classList.add('idle'); },2600); }
 addEventListener('pointermove',wake); wake();
+/* صدا: اولین کلیک یا کلید صدا را فعال می‌کند؛ S یا دکمهٔ صدا حالت را عوض می‌کند */
+const sndBtn=$('#snd'), tst=$('#toast'); let tstT=0;
+function toast(t){ tst.textContent=t; tst.classList.add('show'); clearTimeout(tstT); tstT=setTimeout(()=>tst.classList.remove('show'),1700); }
+function sndCycle(){ const m=SFX.cycle(); sndBtn.dataset.mode=m; toast(['صدا: خاموش','صدا: فقط لحظه‌های اصلی','صدا: کامل'][m]); }
+sndBtn.dataset.mode=SFX.mode;
+sndBtn.addEventListener('click',e=>{ e.stopPropagation(); sndCycle(); });
+addEventListener('keydown',SFX.arm,true); addEventListener('pointerdown',SFX.arm,true);
 let numBuf='', numT=0;
 function jumpNum(){ clearTimeout(numT); const i=parseInt(numBuf,10)-1; numBuf=''; if(i>=0&&i<slides.length) go(i,i>cur?1:-1); }
 addEventListener('keydown',e=>{
@@ -845,6 +965,7 @@ addEventListener('keydown',e=>{
   else if(c==='KeyF'){ toggleFS(); }
   else if(c==='KeyT'){ if(e.shiftKey) t0=Date.now(); else clock.classList.toggle('show'); }
   else if(c==='KeyB'||c==='Period'||k==='.'){ $('#blank').classList.toggle('show'); }
+  else if(c==='KeyS'){ sndCycle(); }
   else if(c==='KeyD'){ flip=!flip; }
   else if(c==='KeyO'){ toggleOv(); }
   else if(k==='?'||c==='KeyH'||c==='Slash'){ $('#help').classList.toggle('show'); }
