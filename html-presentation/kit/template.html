@@ -284,6 +284,13 @@ body.ui #nav{opacity:1}
 .takeaway,.hd .h2{text-wrap:balance}
 .cover .thanks{font-size:42px;font-weight:800;margin-top:34px;color:var(--lav)}
 .cover .qa{font-size:28px;color:var(--mut);margin-top:6px}
+/* بولت شش‌ضلعی (راهنمای گرافیک رویداد): <ul class="hx"><li>…</li></ul>
+   یاسی روی زمینهٔ تیره؛ داخل کادر بنفش فعال (.on) یا با ul.hx.w سفید */
+ul.hx{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:12px}
+ul.hx li{position:relative;padding-inline-start:34px;font-size:28px;line-height:1.5}
+ul.hx li::before{content:"";position:absolute;inset-inline-start:0;top:calc(.75em - 8px);width:14px;height:16px;
+  clip-path:polygon(50% 0,100% 25%,100% 75%,50% 100%,0 75%,0 25%);background:var(--lav)}
+.on ul.hx li::before,ul.hx.w li::before{background:#fff}
 
 @media (prefers-reduced-motion:reduce){
   *{animation-duration:.01s!important;animation-iteration-count:1!important;transition-duration:.01s!important;transition-delay:0s!important}
