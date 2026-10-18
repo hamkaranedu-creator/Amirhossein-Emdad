@@ -933,7 +933,7 @@ path.hlt{fill:none;stroke:var(--lav);stroke-width:3.5;stroke-linecap:round}
     <div><kbd>←</kbd> <kbd>PageUp</kbd> <kbd>Backspace</kbd>: گام قبلی</div>
     <div><kbd>O</kbd>: فهرست اسلایدها · شمارهٔ اسلاید (مثلاً <kbd>1</kbd><kbd>2</kbd>)، <kbd>Home</kbd> یا <kbd>End</kbd>: پرش به اسلاید</div>
     <div><kbd>B</kbd> یا <kbd>.</kbd>: صفحهٔ سیاه · <kbd>T</kbd>: زمان‌سنج (<kbd>Shift+T</kbd> صفر) · <kbd>F</kbd>: تمام‌صفحه · <kbd>D</kbd>: برعکس‌کردن جهت فلش‌ها</div>
-    <div><kbd>S</kbd>: صدا (کامل ← فقط لحظه‌های اصلی ← خاموش)؛ صدا با اولین کلیک فعال می‌شود</div>
+    <div><kbd>S</kbd>: صدا (فقط لحظه‌های اصلی ← خاموش ← هر کلیک)؛ صدا با اولین کلیک فعال می‌شود</div>
     <div>کلیدها با صفحه‌کلید فارسی هم کار می‌کنند. روی عناصر هر اسلاید هم می‌توان کلیک کرد تا مستقیم به همان گام برود.</div>
   </div></div>
   <div id="ov"><h3>فهرست اسلایدها</h3><div class="grid"></div></div>
@@ -1176,78 +1176,75 @@ function countUp(S,node,from,to,ms,g,suf){ S.clear(g); const t0=performance.now(
 const hexPts=r=>[0,1,2,3,4,5].map(k=>{ const a=(-90+60*k)*Math.PI/180; return (r*Math.cos(a)).toFixed(1)+','+(r*Math.sin(a)).toFixed(1); }).join(' ');
 
 /* =====================================================================
-   صدا: نشانه‌های صوتی ظریف و هم‌گام با حرکت. همه با Web Audio ساخته
-   می‌شوند (بدون فایل صوتی، بدون اینترنت). نت‌ها از گام پنج‌نتی «ر ماژور»اند
-   تا کنار هم همیشه هماهنگ باشند؛ کمی طنین فضا و فیلتر نرم دارند.
-   حالت‌ها با کلید S: ۲ کامل ← ۱ فقط لحظه‌های اصلی ← ۰ خاموش.
+   صدا: ضربه‌های بم و کوتاه، هم‌گام با حرکت، که با صدای گوینده تداخل
+   نمی‌کنند. همه با Web Audio ساخته می‌شوند (بدون فایل صوتی، بدون اینترنت).
+   - بم: پایهٔ همهٔ صداها زیر ۴۰۰ هرتز است و فیلتر، بالای حدود ۹۰۰ هرتز را
+     می‌بُرد؛ پس در محدودهٔ وضوح گفتار (۱ تا ۴ کیلوهرتز) تقریباً صدایی نیست.
+   - کوتاه: بیشتر صداها زیر ۲۰۰ میلی‌ثانیه شنیده می‌شوند؛ بدون طنین، حلقه یا صدای پیوسته.
+   - نت‌ها از گام پنج‌نتی «ر ماژور»اند تا کنار هم هماهنگ باشند.
+   حالت‌ها با کلید S: ۱ فقط لحظه‌های اصلی (پیش‌فرض) ← ۰ خاموش ← ۲ کامل (هر کلیک).
    SFX.play(name, …) از کد اسلاید فقط وقتی o.instant نیست صدا می‌زند:
-     step   هر کلیک (خودکار)؛ زیر شدن با شمارهٔ گام و فرود روی آخرین گام
-     back   گام قبلی (خودکار)
-     slide  عوض شدن اسلاید (خودکار)؛ جهت صدا با جهت حرکت اسلاید
-     chime  هر مرحلهٔ یک فرایند خودکار AI یا رسیدن عدد کلیدی (i: بلندی نت)
-     done   پایان یک فرایند خودکار
+     slide   عوض شدن اسلاید (خودکار)؛ جهت با جهت حرکت اسلاید
+     step    هر کلیک، فقط در حالت کامل (خودکار)؛ آخرین گام روی نت پایه فرود می‌آید
+     back    گام قبلی، فقط در حالت کامل (خودکار)
+     chime   رسیدن یک عدد کلیدی یا یک نتیجه (i: بلندی نت؛ کوچک‌تر بم‌تر)
+     done    پایان یک فرایند خودکار AI
      shimmer فقط دگرگونی جلد
      resolve «سپاس» در اسلاید پایان
    ===================================================================== */
 const SFX = (()=>{
-  const KEY = 'deck-sound-mode';
-  const N = [587.33, 659.25, 739.99, 880, 987.77, 1174.66, 1318.51, 1479.98];   /* ر۵ تا فا‌دیز۶ */
+  const KEY = 'deck-sound';
+  const N = [146.83, 164.81, 185.00, 220.00, 246.94, 293.66, 329.63, 369.99];   /* ر۳ تا فادیز۴ */
   const CALM = { step:1, back:1 };                                              /* در حالت «فقط لحظه‌های اصلی» بی‌صدا */
-  let mode = 2, ctx = null, bus = null, armed = false, n = 0;
+  let mode = 1, ctx = null, bus = null, armed = false, n = 0;
   try { const v = localStorage.getItem(KEY); if (v === '0' || v === '1' || v === '2') mode = +v; } catch (e) {}
 
-  /* زنجیره: صدا ← فیلتر نرم ← (مستقیم + طنین کوتاه فضا) ← فشرده‌ساز ملایم ← خروجی */
+  /* زنجیره: صدا ← فیلتر بم‌گذر ← فشرده‌ساز ملایم ← خروجی (بی‌طنین) */
   function attach(c){
     ctx = c;
-    const lp = c.createBiquadFilter(), comp = c.createDynamicsCompressor(), pre = c.createDelay(0.1), rev = c.createConvolver(), wet = c.createGain();
+    const lp = c.createBiquadFilter(), comp = c.createDynamicsCompressor();
     bus = c.createGain(); bus.gain.value = 1;
-    lp.type = 'lowpass'; lp.frequency.value = 5200; lp.Q.value = 0.4;
-    comp.threshold.value = -18; comp.knee.value = 10; comp.ratio.value = 3; comp.attack.value = 0.004; comp.release.value = 0.3;
-    const len = Math.floor(c.sampleRate * 1.8), ir = c.createBuffer(2, len, c.sampleRate);
-    for (let ch = 0; ch < 2; ch++) { const d = ir.getChannelData(ch); let y = 0;
-      for (let i = 0; i < len; i++) { y += 0.3 * ((Math.random() * 2 - 1) - y); d[i] = y * Math.pow(1 - i / len, 3.4); } }
-    rev.buffer = ir; pre.delayTime.value = 0.018; wet.gain.value = 0.32;
-    bus.connect(lp); lp.connect(comp); lp.connect(pre); pre.connect(rev); rev.connect(wet); wet.connect(comp); comp.connect(c.destination);
+    lp.type = 'lowpass'; lp.frequency.value = 900; lp.Q.value = 0.5;
+    comp.threshold.value = -16; comp.knee.value = 8; comp.ratio.value = 3; comp.attack.value = 0.003; comp.release.value = 0.15;
+    bus.connect(lp); lp.connect(comp); comp.connect(c.destination);
   }
   function wake(){
     if (!ctx) { const AC = window.AudioContext || window.webkitAudioContext; if (!AC) return; try { attach(new AC()); } catch (e) { return; } }
     if (ctx.state === 'suspended' && ctx.resume) ctx.resume().catch(()=>{});
   }
-  function out(node, pan, t, pan2){
-    if (!ctx.createStereoPanner) { node.connect(bus); return; }
-    const p = ctx.createStereoPanner(); p.pan.setValueAtTime(pan || 0, t);
-    if (pan2 !== undefined) p.pan.linearRampToValueAtTime(pan2, t + 0.6);
-    node.connect(p); p.connect(bus);
+  function out(node, pan, t){
+    if (!ctx.createStereoPanner || !pan) { node.connect(bus); return; }
+    const p = ctx.createStereoPanner(); p.pan.setValueAtTime(pan, t); node.connect(p); p.connect(bus);
   }
-  function tone(f, t, o){
-    const a = o.a || 0.006, d = o.d || 0.5, osc = ctx.createOscillator(), v = ctx.createGain();
-    osc.type = o.type || 'sine'; osc.frequency.value = f; if (o.det) osc.detune.value = o.det;
-    v.gain.setValueAtTime(0, t); v.gain.linearRampToValueAtTime(o.g, t + a); v.gain.exponentialRampToValueAtTime(0.0001, t + a + d);
-    osc.connect(v); out(v, o.pan, t); osc.start(t); osc.stop(t + a + d + 0.05);
+  /* ضربهٔ نرم: افت کوتاه زیر و بمی برای حملهٔ نرم (مثل مضراب نمدی)، میرایی سریع، هارمونیک دوم ملایم */
+  function tap(f, t, o){
+    o = o || {};
+    const d = o.d || 0.16, g = o.g || 0.2, from = o.from || 1.35;
+    [[1, g, d], [2, g * (o.h === undefined ? 0.28 : o.h), d * 0.6]].forEach(([m, gg, dd])=>{
+      if (!gg) return;
+      const osc = ctx.createOscillator(), v = ctx.createGain();
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(f * m * from, t); osc.frequency.exponentialRampToValueAtTime(f * m, t + 0.035);
+      v.gain.setValueAtTime(0, t); v.gain.linearRampToValueAtTime(gg, t + 0.004); v.gain.exponentialRampToValueAtTime(0.0001, t + dd);
+      osc.connect(v); out(v, o.pan, t); osc.start(t); osc.stop(t + dd + 0.02);
+    });
   }
-  function air(t, dir){                       /* هوای نرم با فیلتر رونده؛ از سمت حرکت اسلاید */
-    const dur = 0.62, len = Math.floor(ctx.sampleRate * dur), b = ctx.createBuffer(1, len, ctx.sampleRate), x = b.getChannelData(0);
-    for (let i = 0; i < len; i++) x[i] = Math.random() * 2 - 1;
-    const s = ctx.createBufferSource(), bp = ctx.createBiquadFilter(), v = ctx.createGain();
-    s.buffer = b; bp.type = 'bandpass'; bp.Q.value = 0.7;
-    bp.frequency.setValueAtTime(dir > 0 ? 420 : 1500, t); bp.frequency.exponentialRampToValueAtTime(dir > 0 ? 1500 : 420, t + dur);
-    v.gain.setValueAtTime(0, t); v.gain.linearRampToValueAtTime(0.05, t + 0.2); v.gain.exponentialRampToValueAtTime(0.0001, t + dur);
-    s.connect(bp); bp.connect(v); out(v, -0.35 * dir, t, 0.35 * dir); s.start(t); s.stop(t + dur + 0.02);
+  /* لغزش بم برای عوض شدن اسلاید: جلو رفتن رو به پایین، برگشت رو به بالا */
+  function glide(t, dir){
+    const osc = ctx.createOscillator(), v = ctx.createGain(), f0 = dir > 0 ? 196 : 110, f1 = dir > 0 ? 98 : 165;
+    osc.type = 'sine'; osc.frequency.setValueAtTime(f0, t); osc.frequency.exponentialRampToValueAtTime(f1, t + 0.2);
+    v.gain.setValueAtTime(0, t); v.gain.linearRampToValueAtTime(0.12, t + 0.012); v.gain.exponentialRampToValueAtTime(0.0001, t + 0.24);
+    osc.connect(v); out(v, 0.15 * dir, t); osc.start(t); osc.stop(t + 0.26);
   }
+  const at = ()=> ctx.currentTime + 0.005;
   const V = {
-    step(k, last){ const t = ctx.currentTime + 0.005, f = last ? N[5] : N[k <= 5 ? Math.max(0, k - 1) : 3 + (k % 2)];
-      tone(f, t, { d:0.45, g:0.09 }); tone(f * 2, t, { type:'triangle', d:0.14, g:0.012 }); },
-    back(){ const t = ctx.currentTime + 0.005; tone(N[0] / 2, t, { d:0.28, g:0.06 }); },
-    slide(dir){ const t = ctx.currentTime + 0.005; dir = dir < 0 ? -1 : 1;
-      air(t, dir); tone(293.66, t + 0.05, { a:0.08, d:0.7, g:0.028, pan:-0.2 * dir }); tone(440, t + 0.09, { a:0.08, d:0.6, g:0.02, pan:0.2 * dir }); },
-    chime(i){ const t = ctx.currentTime + 0.005, f = N[Math.max(0, Math.min(N.length - 1, i | 0))];
-      tone(f, t, { d:1.1, g:0.07 }); tone(f * 2, t, { d:0.6, g:0.016, det:4 }); tone(f * 3, t, { d:0.3, g:0.005 }); },
-    done(){ const t = ctx.currentTime + 0.005;
-      tone(880, t, { d:0.6, g:0.06 }); tone(1318.51, t + 0.1, { d:1.1, g:0.06 }); tone(2637, t + 0.1, { d:0.4, g:0.006 }); },
-    shimmer(){ const t = ctx.currentTime + 0.005;
-      [587.33, 880, 1174.66, 1479.98].forEach((f, k)=>{ tone(f, t + k * 0.08, { d:1.4, g:0.05, pan:(k - 1.5) * 0.15 }); tone(f * 2, t + k * 0.08, { d:0.5, g:0.008, det:5 }); }); },
-    resolve(){ const t = ctx.currentTime + 0.005;
-      [293.66, 440, 587.33, 739.99].forEach((f, k)=>{ tone(f, t + k * 0.05, { a:0.3, d:2.6, g:0.045, pan:(k - 1.5) * 0.12 }); tone(f * 2, t + k * 0.05, { a:0.3, d:1.4, g:0.006, det:-5 }); }); }
+    slide(dir){ glide(at(), dir < 0 ? -1 : 1); },
+    step(k, last){ tap(last ? N[0] : N[k <= 5 ? Math.max(0, k - 1) : 3 + (k % 2)], at(), { d:last ? 0.2 : 0.15, g:0.075 }); },
+    back(){ tap(110, at(), { d:0.12, g:0.07, h:0.2 }); },
+    chime(i){ tap(N[Math.max(0, Math.min(N.length - 1, i | 0))], at(), { d:0.18, g:0.085 }); },
+    done(){ const t = at(); tap(220, t, { d:0.15, g:0.075 }); tap(293.66, t + 0.09, { d:0.2, g:0.08 }); },
+    shimmer(){ const t = at(); [146.83, 220, 293.66].forEach((f, k)=>tap(f, t + k * 0.07, { d:0.18, g:0.07 })); },
+    resolve(){ const t = at(); [[146.83, 0.045], [220, 0.037], [293.66, 0.03]].forEach(([f, g])=>tap(f, t, { d:0.5, g, from:1.15, h:0.2 })); }
   };
   return {
     get mode(){ return mode; },
@@ -1321,7 +1318,7 @@ defineSlide('s-ladder', S=>{
     fill.style.transform=`scaleX(${k<=1?0:(k-1)/(rnodes.length-1)})`;
   }
   function play(instant){ S.clear('run'); if(instant||REDUCE){ runTo(rnodes.length,true); return; }
-    let k=0; const t=()=>{ k++; runTo(k,k>=rnodes.length); SFX.play(k>=rnodes.length?'done':'chime',k-1); if(k>=rnodes.length) S.clear('run'); }; t(); S.every(t,1000,'run'); }
+    let k=0; const t=()=>{ k++; runTo(k,k>=rnodes.length); if(k>=rnodes.length){ SFX.play('done'); S.clear('run'); } }; t(); S.every(t,1000,'run'); }
   const lvl=n=> n<=0?-1 : n<=4?n-1 : n===5?3 : 4;
   let shown=-2, curN=0, typing=false;
   function after(sel,instant){
@@ -1616,7 +1613,7 @@ function sceneSlide(id){
         S.clear('vb');
         if(n<1) setVerbs(0);
         else if(n>1||o.instant||REDUCE) setVerbs(verbs.length);
-        else { let k=0; const t=()=>{ k++; setVerbs(k); SFX.play('chime',k-1); if(k>=verbs.length) S.clear('vb'); }; t(); S.every(t,700,'vb'); }
+        else { let k=0; const t=()=>{ k++; setVerbs(k); if(k>=verbs.length) S.clear('vb'); }; t(); S.every(t,700,'vb'); }
         const k=Math.min(n,2); if(k!==expK){ expK=k; exp.textContent=D.exp[k]; pulseIn([exp]); }
       } };
   });
@@ -1850,7 +1847,7 @@ addEventListener('pointermove',wake); wake();
 /* صدا: اولین کلیک یا کلید صدا را فعال می‌کند؛ S یا دکمهٔ صدا حالت را عوض می‌کند */
 const sndBtn=$('#snd'), tst=$('#toast'); let tstT=0;
 function toast(t){ tst.textContent=t; tst.classList.add('show'); clearTimeout(tstT); tstT=setTimeout(()=>tst.classList.remove('show'),1700); }
-function sndCycle(){ const m=SFX.cycle(); sndBtn.dataset.mode=m; toast(['صدا: خاموش','صدا: فقط لحظه‌های اصلی','صدا: کامل'][m]); }
+function sndCycle(){ const m=SFX.cycle(); sndBtn.dataset.mode=m; toast(['صدا: خاموش','صدا: فقط لحظه‌های اصلی','صدا: هر کلیک'][m]); }
 sndBtn.dataset.mode=SFX.mode;
 sndBtn.addEventListener('click',e=>{ e.stopPropagation(); sndCycle(); });
 addEventListener('keydown',SFX.arm,true); addEventListener('pointerdown',SFX.arm,true);
