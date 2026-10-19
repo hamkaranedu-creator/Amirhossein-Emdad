@@ -95,15 +95,6 @@ body.ui #nav{opacity:1}
 #help kbd{background:rgba(255,255,255,.12);border:1px solid var(--hair);border-radius:10px;padding:2px 14px;font-family:inherit;margin:0 6px;display:inline-block;direction:ltr}
 #blank{position:absolute;inset:0;z-index:40;background:#000;display:none}
 #blank.show{display:block}
-/* صدا: دکمهٔ حالت صدا و پیام کوتاه */
-#nav .snd{width:42px;height:42px;border-radius:50%;border:1px solid rgba(255,255,255,.25);display:grid;place-items:center;transition:background .3s}
-#nav .snd:hover{background:rgba(255,255,255,.1)}
-#nav .snd svg{width:22px;height:22px;fill:none;stroke:#fff;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;overflow:visible}
-#nav .snd path,#nav .snd line{transition:opacity .3s}
-#nav .snd[data-mode="1"] .w2,#nav .snd[data-mode="0"] .w1,#nav .snd[data-mode="0"] .w2,#nav .snd:not([data-mode="0"]) .x{opacity:0}
-#toast{position:absolute;left:50%;bottom:112px;z-index:35;transform:translate(-50%,12px);padding:10px 28px;border-radius:40px;font-size:24px;
-  background:rgba(20,8,48,.92);border:1px solid var(--hair);opacity:0;pointer-events:none;transition:opacity .4s,transform .5s var(--ease)}
-#toast.show{opacity:1;transform:translate(-50%,0)}
 #ov{position:absolute;inset:0;z-index:30;background:rgba(8,0,26,.95);display:none;padding:90px 120px}
 #ov.show{display:block}
 #ov h3{font-size:40px;margin:0 0 28px}
@@ -919,13 +910,11 @@ path.hlt{fill:none;stroke:var(--lav);stroke-width:3.5;stroke-linecap:round}
   <div id="progress"><i></i></div>
   <div id="steps"></div>
   <div id="clock">00:00</div>
-  <div id="toast" role="status" aria-live="polite"></div>
   <nav id="nav" aria-label="ناوبری اسلاید">
     <button class="arrow" id="prev" aria-label="گام قبلی">→</button>
     <div id="dots"></div>
     <button class="arrow" id="next" aria-label="گام بعدی">←</button>
     <span id="count"></span>
-    <button class="snd" id="snd" aria-label="حالت صدا (S)"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9.5h3.5L12 6v12l-4.5-3.5H4z"/><path class="w1" d="M15.2 9.6a3.4 3.4 0 010 4.8"/><path class="w2" d="M17.8 7.2a6.8 6.8 0 010 9.6"/><g class="x"><line x1="16" y1="9.5" x2="21" y2="14.5"/><line x1="21" y1="9.5" x2="16" y2="14.5"/></g></svg></button>
   </nav>
   <div id="help"><div>
     <h3>میانبرهای ارائه</h3>
@@ -933,7 +922,6 @@ path.hlt{fill:none;stroke:var(--lav);stroke-width:3.5;stroke-linecap:round}
     <div><kbd>←</kbd> <kbd>PageUp</kbd> <kbd>Backspace</kbd>: گام قبلی</div>
     <div><kbd>O</kbd>: فهرست اسلایدها · شمارهٔ اسلاید (مثلاً <kbd>1</kbd><kbd>2</kbd>)، <kbd>Home</kbd> یا <kbd>End</kbd>: پرش به اسلاید</div>
     <div><kbd>B</kbd> یا <kbd>.</kbd>: صفحهٔ سیاه · <kbd>T</kbd>: زمان‌سنج (<kbd>Shift+T</kbd> صفر) · <kbd>F</kbd>: تمام‌صفحه · <kbd>D</kbd>: برعکس‌کردن جهت فلش‌ها</div>
-    <div><kbd>S</kbd>: صدا (فقط لحظه‌های اصلی ← خاموش ← هر کلیک)؛ صدا با اولین کلیک فعال می‌شود</div>
     <div>کلیدها با صفحه‌کلید فارسی هم کار می‌کنند. روی عناصر هر اسلاید هم می‌توان کلیک کرد تا مستقیم به همان گام برود.</div>
   </div></div>
   <div id="ov"><h3>فهرست اسلایدها</h3><div class="grid"></div></div>
@@ -1175,108 +1163,13 @@ function countUp(S,node,from,to,ms,g,suf){ S.clear(g); const t0=performance.now(
   tick(); S.every(tick,30,g); }
 const hexPts=r=>[0,1,2,3,4,5].map(k=>{ const a=(-90+60*k)*Math.PI/180; return (r*Math.cos(a)).toFixed(1)+','+(r*Math.sin(a)).toFixed(1); }).join(' ');
 
-/* =====================================================================
-   صدا: ضربه‌های بم و کوتاه، هم‌گام با حرکت، که با صدای گوینده تداخل
-   نمی‌کنند. همه با Web Audio ساخته می‌شوند (بدون فایل صوتی، بدون اینترنت).
-   - بم: پایهٔ همهٔ صداها زیر ۴۰۰ هرتز است و فیلتر، بالای حدود ۹۰۰ هرتز را
-     می‌بُرد؛ پس در محدودهٔ وضوح گفتار (۱ تا ۴ کیلوهرتز) تقریباً صدایی نیست.
-   - کوتاه: بیشتر صداها زیر ۲۰۰ میلی‌ثانیه شنیده می‌شوند؛ بدون طنین، حلقه یا صدای پیوسته.
-   - نت‌ها از گام پنج‌نتی «ر ماژور»اند تا کنار هم هماهنگ باشند.
-   حالت‌ها با کلید S: ۱ فقط لحظه‌های اصلی (پیش‌فرض) ← ۰ خاموش ← ۲ کامل (هر کلیک).
-   SFX.play(name, …) از کد اسلاید فقط وقتی o.instant نیست صدا می‌زند:
-     slide   عوض شدن اسلاید (خودکار)؛ جهت با جهت حرکت اسلاید
-     step    هر کلیک، فقط در حالت کامل (خودکار)؛ آخرین گام روی نت پایه فرود می‌آید
-     back    گام قبلی، فقط در حالت کامل (خودکار)
-     chime   رسیدن یک عدد کلیدی یا یک نتیجه (i: بلندی نت؛ کوچک‌تر بم‌تر)
-     done    پایان یک فرایند خودکار AI
-     shimmer فقط دگرگونی جلد
-     resolve «سپاس» در اسلاید پایان
-   ===================================================================== */
-const SFX = (()=>{
-  const KEY = 'deck-sound';
-  const N = [146.83, 164.81, 185.00, 220.00, 246.94, 293.66, 329.63, 369.99];   /* ر۳ تا فادیز۴ */
-  const CALM = { step:1, back:1 };                                              /* در حالت «فقط لحظه‌های اصلی» بی‌صدا */
-  let mode = 1, ctx = null, bus = null, armed = false, n = 0;
-  try { const v = localStorage.getItem(KEY); if (v === '0' || v === '1' || v === '2') mode = +v; } catch (e) {}
-
-  /* زنجیره: صدا ← فیلتر بم‌گذر ← فشرده‌ساز ملایم ← خروجی (بی‌طنین) */
-  function attach(c){
-    ctx = c;
-    const lp = c.createBiquadFilter(), comp = c.createDynamicsCompressor();
-    bus = c.createGain(); bus.gain.value = 1;
-    lp.type = 'lowpass'; lp.frequency.value = 900; lp.Q.value = 0.5;
-    comp.threshold.value = -16; comp.knee.value = 8; comp.ratio.value = 3; comp.attack.value = 0.003; comp.release.value = 0.15;
-    bus.connect(lp); lp.connect(comp); comp.connect(c.destination);
-  }
-  function wake(){
-    if (!ctx) { const AC = window.AudioContext || window.webkitAudioContext; if (!AC) return; try { attach(new AC()); } catch (e) { return; } }
-    if (ctx.state === 'suspended' && ctx.resume) ctx.resume().catch(()=>{});
-  }
-  function out(node, pan, t){
-    if (!ctx.createStereoPanner || !pan) { node.connect(bus); return; }
-    const p = ctx.createStereoPanner(); p.pan.setValueAtTime(pan, t); node.connect(p); p.connect(bus);
-  }
-  /* ضربهٔ نرم: افت کوتاه زیر و بمی برای حملهٔ نرم (مثل مضراب نمدی)، میرایی سریع، هارمونیک دوم ملایم */
-  function tap(f, t, o){
-    o = o || {};
-    const d = o.d || 0.16, g = o.g || 0.2, from = o.from || 1.35;
-    [[1, g, d], [2, g * (o.h === undefined ? 0.28 : o.h), d * 0.6]].forEach(([m, gg, dd])=>{
-      if (!gg) return;
-      const osc = ctx.createOscillator(), v = ctx.createGain();
-      osc.type = 'sine';
-      osc.frequency.setValueAtTime(f * m * from, t); osc.frequency.exponentialRampToValueAtTime(f * m, t + 0.035);
-      v.gain.setValueAtTime(0, t); v.gain.linearRampToValueAtTime(gg, t + 0.004); v.gain.exponentialRampToValueAtTime(0.0001, t + dd);
-      osc.connect(v); out(v, o.pan, t); osc.start(t); osc.stop(t + dd + 0.02);
-    });
-  }
-  /* لغزش بم برای عوض شدن اسلاید: جلو رفتن رو به پایین، برگشت رو به بالا */
-  function glide(t, dir){
-    const osc = ctx.createOscillator(), v = ctx.createGain(), f0 = dir > 0 ? 196 : 110, f1 = dir > 0 ? 98 : 165;
-    osc.type = 'sine'; osc.frequency.setValueAtTime(f0, t); osc.frequency.exponentialRampToValueAtTime(f1, t + 0.2);
-    v.gain.setValueAtTime(0, t); v.gain.linearRampToValueAtTime(0.12, t + 0.012); v.gain.exponentialRampToValueAtTime(0.0001, t + 0.24);
-    osc.connect(v); out(v, 0.15 * dir, t); osc.start(t); osc.stop(t + 0.26);
-  }
-  const at = ()=> ctx.currentTime + 0.005;
-  const V = {
-    slide(dir){ glide(at(), dir < 0 ? -1 : 1); },
-    step(k, last){ tap(last ? N[0] : N[k <= 5 ? Math.max(0, k - 1) : 3 + (k % 2)], at(), { d:last ? 0.2 : 0.15, g:0.075 }); },
-    back(){ tap(110, at(), { d:0.12, g:0.07, h:0.2 }); },
-    chime(i){ tap(N[Math.max(0, Math.min(N.length - 1, i | 0))], at(), { d:0.18, g:0.085 }); },
-    done(){ const t = at(); tap(220, t, { d:0.15, g:0.075 }); tap(293.66, t + 0.09, { d:0.2, g:0.08 }); },
-    shimmer(){ const t = at(); [146.83, 220, 293.66].forEach((f, k)=>tap(f, t + k * 0.07, { d:0.18, g:0.07 })); },
-    resolve(){ const t = at(); [[146.83, 0.045], [220, 0.037], [293.66, 0.03]].forEach(([f, g])=>tap(f, t, { d:0.5, g, from:1.15, h:0.2 })); }
-  };
-  return {
-    get mode(){ return mode; },
-    get n(){ return n; },                     /* شمار درخواست‌ها: موتور با آن می‌فهمد اسلاید خودش صدا زده یا نه */
-    arm(){ armed = true; wake(); },           /* اولین کلیک یا کلید: مرورگرها پیش از آن اجازهٔ پخش نمی‌دهند */
-    attach,
-    play(name, a, b){
-      n++;
-      const bl = document.getElementById('blank');
-      const ok = !!mode && !(mode === 1 && CALM[name]) && armed && !document.hidden && !(bl && bl.classList.contains('show'));
-      try { dispatchEvent(new CustomEvent('sfx', { detail:{ name, a, b, ok } })); } catch (e) {}   /* برای آزمون و ابزارها */
-      if (!ok) return;
-      wake(); if (!ctx || !V[name]) return;
-      try { V[name](a, b); } catch (e) {}
-    },
-    cycle(){
-      mode = (mode + 2) % 3; try { localStorage.setItem(KEY, String(mode)); } catch (e) {}
-      if (mode && armed) { wake(); if (ctx) V.chime(mode === 2 ? 3 : 0); }
-      return mode;
-    }
-  };
-})();
-
 const registry = {};
 function defineSlide(id, factory){ registry[id] = factory; }
 
 /* ۱) جلد */
 defineSlide('s-title', S=>{
   const m=S.$('#morph'), sx=S.$$('.sx');
-  return { steps:3, show(n,o={}){ const was=m.dataset.state; m.dataset.state = n>=1 ? 'act':'record';
-    if(n>=1&&was!=='act'&&!o.instant) SFX.play('shimmer');
-    sx.forEach(x=>x.classList.toggle('show', n>=2)); } };
+  return { steps:3, show(n){ m.dataset.state = n>=1 ? 'act':'record'; sx.forEach(x=>x.classList.toggle('show', n>=2)); } };
 });
 
 /* ۶) سه لایه */
@@ -1318,7 +1211,7 @@ defineSlide('s-ladder', S=>{
     fill.style.transform=`scaleX(${k<=1?0:(k-1)/(rnodes.length-1)})`;
   }
   function play(instant){ S.clear('run'); if(instant||REDUCE){ runTo(rnodes.length,true); return; }
-    let k=0; const t=()=>{ k++; runTo(k,k>=rnodes.length); if(k>=rnodes.length){ SFX.play('done'); S.clear('run'); } }; t(); S.every(t,1000,'run'); }
+    let k=0; const t=()=>{ k++; runTo(k,k>=rnodes.length); if(k>=rnodes.length) S.clear('run'); }; t(); S.every(t,1000,'run'); }
   const lvl=n=> n<=0?-1 : n<=4?n-1 : n===5?3 : 4;
   let shown=-2, curN=0, typing=false;
   function after(sel,instant){
@@ -1450,7 +1343,7 @@ defineSlide('s-gov', S=>{
       {transform:`translate(${o.x}px,${o.y}px) scale(1.25)`,offset:.5},
       {transform:`translate(${o.x}px,${o.y}px) scale(1.25)`,offset:.6},
       {transform:`translate(${b.x}px,${b.y}px) scale(.8)`,opacity:1}],{duration:1500,easing:'cubic-bezier(.45,0,.25,1)',fill:'forwards'});
-    flying={an,tk}; an.onfinish=()=>{ tk.remove(); flying=null; land(i); SFX.play('chime',[4,2,0][k]); };
+    flying={an,tk}; an.onfinish=()=>{ tk.remove(); flying=null; land(i); };
   }
   return { steps:11,
     leave(){ S.clear(); clearRoute(); $$('.token',S.el).forEach(t=>t.remove()); },
@@ -1557,7 +1450,7 @@ defineSlide('s-enterprise', S=>{
       n1.classList.toggle('show',n>=2); mat.classList.toggle('show',n>=3); n2.classList.toggle('show',n>=3);
       segs.forEach(s=>s.style.width= n>=3 ? s.dataset.w+'%' : '0');
       const v = n<=0 ? 20 : n===1 ? 50 : 88; yr.textContent=fa(n<=0?2017:n===1?2022:2025);
-      if(v!==lastV){ if(o.instant||REDUCE||lastV<0) big.textContent=fa(v)+'٪'; else { countUp(S,big,lastV,v,1200,'cu','٪'); S.clear('cud'); S.later(()=>SFX.play('chime',5),1220,'cud'); } lastV=v; }
+      if(v!==lastV){ if(o.instant||REDUCE||lastV<0) big.textContent=fa(v)+'٪'; else countUp(S,big,lastV,v,1200,'cu','٪'); lastV=v; }
     } };
 });
 
@@ -1741,9 +1634,7 @@ defineSlide('s-caps', S=>{
 defineSlide('s-end', S=>{
   const img=S.$('.logo-full'); img.onerror=()=>{ img.style.visibility='hidden'; }; img.src=$('#s-title .logo-full').getAttribute('src');
   const sx=S.$$('.sx');
-  let thanked=false;
-  return { steps:2, show(n,o={}){ sx.forEach(x=>x.classList.toggle('show',n>=1));
-    if(n>=1&&!thanked&&!o.instant) SFX.play('resolve'); thanked=n>=1; } };
+  return { steps:2, show(n){ sx.forEach(x=>x.classList.toggle('show',n>=1)); } };
 });
 
 /* ---- ساخت اسلایدها پس از ثبت همهٔ defineSlide ها ---- */
@@ -1809,11 +1700,9 @@ function paint(){
   if(s.api.steps>1) for(let k=0;k<s.api.steps;k++) stepsEl.append(el('i', k<=s.step ? 'on'+(k===s.step?' cur':'') : ''));
   count.textContent=fa(cur+1)+' / '+fa(slides.length);
 }
-function setStep(idx,k,instant,quiet){
-  const s=slides[idx]; k=Math.max(0,Math.min(s.api.steps-1,k)); const was=s.step, mark=SFX.n; s.step=k;
+function setStep(idx,k,instant){
+  const s=slides[idx]; k=Math.max(0,Math.min(s.api.steps-1,k)); s.step=k;
   s.api.show&&s.api.show(k,{instant:!!instant}); if(idx===cur) paint();
-  /* صدای پیش‌فرض گام، مگر اسلاید خودش صدای خاصی زده باشد */
-  if(!instant&&!quiet&&idx===cur&&k!==was&&SFX.n===mark) SFX.play(k>was?'step':'back',k,k===s.api.steps-1);
 }
 function go(n,dir,landLast){
   n=Math.max(0,Math.min(slides.length-1,n)); if(n===cur) return;
@@ -1824,8 +1713,7 @@ function go(n,dir,landLast){
   stage.dataset.cover = nx.el.classList.contains('cover') ? '1' : '0';
   $$('button',dots).forEach((b,i)=>b.classList.toggle('on',i===n));
   bar.style.transform=`scaleX(${(n+1)/slides.length})`;
-  SFX.play('slide',dir);
-  setStep(n, landLast ? nx.api.steps-1 : 0, !!landLast, true);
+  setStep(n, landLast ? nx.api.steps-1 : 0, !!landLast);
   try{ history.replaceState(null,'','#'+(n+1)); }catch(e){}
 }
 function next(){ const s=slides[cur]; if(s.step<s.api.steps-1) setStep(cur,s.step+1); else if(cur<slides.length-1) go(cur+1,1); }
@@ -1844,13 +1732,6 @@ setInterval(()=>{ const s=Math.floor((Date.now()-t0)/1000); clock.textContent=St
 let idleT=0;
 function wake(){ document.body.classList.add('ui'); document.body.classList.remove('idle'); clearTimeout(idleT); idleT=setTimeout(()=>{ document.body.classList.remove('ui'); document.body.classList.add('idle'); },2600); }
 addEventListener('pointermove',wake); wake();
-/* صدا: اولین کلیک یا کلید صدا را فعال می‌کند؛ S یا دکمهٔ صدا حالت را عوض می‌کند */
-const sndBtn=$('#snd'), tst=$('#toast'); let tstT=0;
-function toast(t){ tst.textContent=t; tst.classList.add('show'); clearTimeout(tstT); tstT=setTimeout(()=>tst.classList.remove('show'),1700); }
-function sndCycle(){ const m=SFX.cycle(); sndBtn.dataset.mode=m; toast(['صدا: خاموش','صدا: فقط لحظه‌های اصلی','صدا: هر کلیک'][m]); }
-sndBtn.dataset.mode=SFX.mode;
-sndBtn.addEventListener('click',e=>{ e.stopPropagation(); sndCycle(); });
-addEventListener('keydown',SFX.arm,true); addEventListener('pointerdown',SFX.arm,true);
 let numBuf='', numT=0;
 function jumpNum(){ clearTimeout(numT); const i=parseInt(numBuf,10)-1; numBuf=''; if(i>=0&&i<slides.length) go(i,i>cur?1:-1); }
 addEventListener('keydown',e=>{
@@ -1868,7 +1749,6 @@ addEventListener('keydown',e=>{
   else if(c==='KeyF'){ toggleFS(); }
   else if(c==='KeyT'){ if(e.shiftKey) t0=Date.now(); else clock.classList.toggle('show'); }
   else if(c==='KeyB'||c==='Period'||k==='.'){ $('#blank').classList.toggle('show'); }
-  else if(c==='KeyS'){ sndCycle(); }
   else if(c==='KeyD'){ flip=!flip; }
   else if(c==='KeyO'){ toggleOv(); }
   else if(k==='?'||c==='KeyH'||c==='Slash'){ $('#help').classList.toggle('show'); }
