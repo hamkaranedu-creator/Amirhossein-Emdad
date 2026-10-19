@@ -143,7 +143,7 @@ body.ui #nav{opacity:1}
 .morph[data-state="act"] .hero-net .pt{transform:translate(var(--ax),var(--ay));fill:var(--lav)}
 
 /* =====================================================================
-   ۲) سه لایهٔ ERP
+   ۳) سه لایهٔ ERP
    ===================================================================== */
 .l3{position:relative;margin-top:64px;display:flex;align-items:flex-start}
 .l3 .line{position:absolute;top:98px;right:280px;left:280px;height:3px;background:var(--hair2)}
@@ -162,7 +162,7 @@ body.ui #nav{opacity:1}
 .takeaway{margin:auto 0 0;font-size:34px;line-height:1.7;font-weight:600;text-align:center;max-width:1400px;align-self:center}
 
 /* =====================================================================
-   ۳) نردبان AI + اجرای Agent
+   ۴) نردبان AI + اجرای Agent
    ===================================================================== */
 .stairs{position:relative;height:350px;margin-top:34px;display:flex;align-items:flex-end;gap:28px}
 .stb{flex:1;display:flex;flex-direction:column;justify-content:flex-start;align-items:flex-start;padding:16px 26px 12px;text-align:right;
@@ -202,7 +202,7 @@ body.ui #nav{opacity:1}
 @keyframes beat{from{stroke-dashoffset:60}to{stroke-dashoffset:-400}}
 
 /* =====================================================================
-   ۴) شبکهٔ Agentها + چرخهٔ کار
+   ۵) شبکهٔ Agentها + چرخهٔ کار
    ===================================================================== */
 .cols4{display:grid;grid-template-columns:640px 1fr;gap:20px;flex:1;min-height:0}
 .dtl{align-self:center;display:flex;flex-direction:column;gap:14px;padding-right:10px}
@@ -243,7 +243,7 @@ body.ui #nav{opacity:1}
 .loopbar .ret{font-size:34px;color:var(--lav);margin-right:14px;display:inline-block;animation:hxs 6s linear infinite}
 
 /* =====================================================================
-   ۵) Governance: سه رکن + کنترل متناسب با ریسک
+   ۶) Governance: سه رکن + کنترل متناسب با ریسک
    ===================================================================== */
 .pil{display:grid;grid-template-columns:repeat(3,1fr);gap:30px;margin-top:28px}
 .pl{display:flex;align-items:center;gap:16px;text-align:right;opacity:.32;transition:opacity .6s}
@@ -292,6 +292,35 @@ ul.hx li::before{content:"";position:absolute;inset-inline-start:0;top:calc(.75e
   clip-path:polygon(50% 0,100% 25%,100% 75%,50% 100%,0 75%,0 25%);background:var(--lav)}
 .on ul.hx li::before,ul.hx.w li::before{background:#fff}
 
+/* =====================================================================
+   ۲) معرفی ارائه‌دهنده: ۱ تا ۳ نفر؛ چیدمان با تعداد عوض می‌شود.
+   تصویر بریده‌شده روی زمینهٔ یکسان برند، در قاب شش‌ضلعی
+   ===================================================================== */
+.intro{flex:1;min-height:0;display:flex;align-items:center;justify-content:center;gap:110px;margin-top:-20px}
+.pc{display:flex;flex-direction:column;align-items:center;text-align:center;transition:opacity .6s ease,transform .7s var(--ease)}
+.pc .ph{position:relative;width:var(--pw);aspect-ratio:176/200;flex:none}
+.pc .bgx{position:absolute;inset:0;overflow:hidden;clip-path:polygon(50% 0,100% 25%,100% 75%,50% 100%,0 75%,0 25%);
+  background:linear-gradient(180deg,#ECE4FF 0%,#C9B2FF 46%,#8B5CF6 100%)}
+.pc .bgx img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;transform:scale(1.06);transition:transform 1.8s var(--ease) .2s}
+.slide.active .pc .bgx img{transform:none}
+.pc .bgx .sil{position:absolute;inset:0;width:100%;height:100%}
+.pc .ph svg.fr{position:absolute;inset:0;width:100%;height:100%;overflow:visible;pointer-events:none}
+.pc .rim{fill:none;stroke:#E7DBFF;stroke-width:1.1;stroke-linejoin:round;filter:drop-shadow(0 0 6px rgba(170,110,255,.9));stroke-dasharray:1;stroke-dashoffset:1}
+.slide.active .pc .rim{stroke-dashoffset:0;transition:stroke-dashoffset 1.6s var(--ease) calc(var(--i,0) * 160ms + 350ms)}
+.pc .halo{fill:none;stroke:rgba(201,178,255,.28);stroke-width:1.5;stroke-dasharray:5 9;vector-effect:non-scaling-stroke}
+.pc .nm{font-size:var(--nf);font-weight:800;line-height:1.3;margin-top:36px}
+.pc .tt{font-size:var(--tf);font-weight:600;color:var(--lav);line-height:1.45;margin-top:6px;direction:ltr;unicode-bidi:isolate}
+.pc .acc{display:block;width:150px;height:4px;border-radius:4px;background:linear-gradient(270deg,var(--lav),var(--mag));margin:26px 0 20px}
+.intro.n1 .pc{--pw:480px;--nf:92px;--tf:38px;flex-direction:row;gap:110px;text-align:right}
+.intro.n1 .meta{display:flex;flex-direction:column;align-items:flex-start}
+.intro.n1 .nm,.intro.n1 .tt{margin-top:0}
+.intro.n2 .pc{--pw:380px;--nf:52px;--tf:27px}
+.intro.n3{gap:80px}
+.intro.n3 .pc{--pw:330px;--nf:44px;--tf:24px}
+.intro.focus .pc{opacity:.38}
+.intro.focus .pc.on{opacity:1;transform:translateY(-8px)}
+.intro .pc.on .rim{stroke:#fff}
+
 @media (prefers-reduced-motion:reduce){
   *{animation-duration:.01s!important;animation-iteration-count:1!important;transition-duration:.01s!important;transition-delay:0s!important}
 }
@@ -338,7 +367,15 @@ ul.hx li::before{content:"";position:absolute;inset-inline-start:0;top:calc(.75e
     </div>
   </section>
 
-  <!-- ۲) سه لایه — گام‌ها: لایهٔ ۱ ← ۲ ← ۳ ← جمع‌بندی -->
+  <!-- ۲) معرفی ارائه‌دهنده — ۱ تا ۳ نفر از slide-data (presenters)؛ چند نفر: هر کلیک یک نفر را برجسته می‌کند -->
+  <section class="slide" id="s-intro" data-title="معرفی ارائه‌دهنده">
+    <div class="pad">
+      <div class="hd" data-r><div class="sub">ارائه‌دهنده</div></div>
+      <div class="intro"></div>
+    </div>
+  </section>
+
+  <!-- ۳) سه لایه — گام‌ها: لایهٔ ۱ ← ۲ ← ۳ ← جمع‌بندی -->
   <section class="slide" id="s-layers" data-title="آینده ERP">
     <div class="pad">
       <div class="hd" data-r><div class="sub">آینده ERP</div><h2 class="h2">ERP برای پاسخگویی به <span class="hl">آرزوی مشتریان</span></h2></div>
@@ -347,7 +384,7 @@ ul.hx li::before{content:"";position:absolute;inset-inline-start:0;top:calc(.75e
     </div>
   </section>
 
-  <!-- ۳) نردبان AI — گام‌ها: Search ← Assistant ← Copilot ← AI Agent ← تحلیل ← تصمیم ← ثبت سفارش ← پایش -->
+  <!-- ۴) نردبان AI — گام‌ها: Search ← Assistant ← Copilot ← AI Agent ← تحلیل ← تصمیم ← ثبت سفارش ← پایش -->
   <section class="slide" id="s-ladder" data-title="از پاسخ دادن به انجام دادن">
     <div class="pad">
       <div class="hd" data-r><div class="sub">تغییر پارادایم</div><h2 class="h2">AI از <span class="hl">پاسخ دادن</span> به <span class="hl">انجام دادن</span></h2></div>
@@ -377,7 +414,7 @@ ul.hx li::before{content:"";position:absolute;inset-inline-start:0;top:calc(.75e
     </div>
   </section>
 
-  <!-- ۵) Governance — گام‌ها: سه رکن ← سه سطح ریسک ← سه سناریوی نمونه (و کلیک آزاد) ← جمع‌بندی -->
+  <!-- ۶) Governance — گام‌ها: سه رکن ← سه سطح ریسک ← سه سناریوی نمونه (و کلیک آزاد) ← جمع‌بندی -->
   <section class="slide" id="s-gov" data-title="Governance">
     <div class="pad" style="padding-bottom:100px">
       <div class="hd" data-r><div class="sub">اعتماد و کنترل</div><h2 class="h2">AI بدون <span class="hl">Governance</span> خطرناک است</h2></div>
@@ -415,6 +452,9 @@ ul.hx li::before{content:"";position:absolute;inset-inline-start:0;top:calc(.75e
      ===================================================================== -->
 <script type="application/json" id="slide-data">
 {
+  "presenters": [
+    {"name": "نام ارائه‌دهنده", "title": "Title at Company", "photo": ""}
+  ],
   "layers": [
     {"icon":"record","en":"System of Record","tag":"ثبت کند","q":"چه اتفاقی افتاد؟"},
     {"icon":"intel","en":"System of Intelligence","tag":"بفهمد و پیش‌بینی کند","q":"چه اتفاقی دارد می‌افتد؟ چرا؟"},
@@ -560,7 +600,7 @@ defineSlide('s-title', S=>{
   return { steps:3, show(n){ m.dataset.state = n>=1 ? 'act':'record'; sx.forEach(x=>x.classList.toggle('show', n>=2)); } };
 });
 
-/* ۲) سه لایه */
+/* ۳) سه لایه */
 defineSlide('s-layers', S=>{
   const box=S.$('#l3'), cols=[], fill=S.$('.line i',box), pulse=S.$('.pulse',box), take=S.$('#take');
   DATA.layers.forEach((d,i)=>{
@@ -577,7 +617,7 @@ defineSlide('s-layers', S=>{
     } };
 });
 
-/* ۳) نردبان AI + اجرای Agent */
+/* ۴) نردبان AI + اجرای Agent */
 defineSlide('s-ladder', S=>{
   const stairs=S.$('#stairs'), bars=[], pBox=S.$('#lprompt'), pT=S.$('#lprompt .tt'), reply=S.$('#lreply'), rT=S.$('#lreply .rt2'), run=S.$('#run'), fill=S.$('#run .rline i');
   DATA.ladder.forEach((d,i)=>{
@@ -611,7 +651,7 @@ defineSlide('s-ladder', S=>{
     } };
 });
 
-/* ۴) شبکهٔ Agentها + چرخهٔ کار */
+/* ۵) شبکهٔ Agentها + چرخهٔ کار */
 defineSlide('s-agents', S=>{
   const net=S.$('#net'), A=DATA.agents, W=1060, H=700, cx=W/2, cy=H/2-6, rx=360, ry=236;
   const pos=A.map((_,i)=>{ const a=(-90-i*60)*Math.PI/180; return {x:cx+rx*Math.cos(a), y:cy+ry*Math.sin(a)}; });
@@ -672,7 +712,7 @@ defineSlide('s-agents', S=>{
     } };
 });
 
-/* ۵) Governance: سه رکن + کنترل متناسب با ریسک */
+/* ۶) Governance: سه رکن + کنترل متناسب با ریسک */
 defineSlide('s-gov', S=>{
   const R=DATA.risk, pil=S.$('#pil'), rt=S.$('#rt'), qt=S.$('#qt'), W=1680, H=330, ROWY=[50,165,280];
   const pills=DATA.pillars.map((p,i)=>{
@@ -732,6 +772,30 @@ defineSlide('s-gov', S=>{
       else if(routed<0) route(R.auto[2], true);
     } };
 });
+
+/* ۲) معرفی ارائه‌دهنده(ها): slide-data → presenters: [{name, title, photo, pos}] برای ۱ تا ۳ نفر.
+   چیدمان با تعداد خودکار عوض می‌شود: یک نفر افقی و بزرگ؛ دو یا سه نفر کنار هم.
+   یک نفر یک گام دارد؛ چند نفر: گام ۰ همه، و هر کلیک یک نفر را برجسته می‌کند.
+   photo: تصویر بریده‌شده با زمینهٔ شفاف و قاب یکسان (خروجی portrait.py، ۸۸۰×۱۰۰۰)؛ خالی = جای عکس.
+   pos (اختیاری): object-position برای عکسی که پس‌زمینه‌اش جدا نشده، مثلاً "50% 30%". */
+const SIL = '<svg class="sil" viewBox="0 0 176 200" aria-hidden="true"><circle cx="88" cy="82" r="31" fill="rgba(58,18,140,.30)"/><path d="M26 200c0-52 28-78 62-78s62 26 62 78z" fill="rgba(58,18,140,.30)"/></svg>';
+const HEXF = '<svg class="fr" viewBox="0 0 176 200" aria-hidden="true"><polygon class="halo" points="88,-9 184,46 184,154 88,209 -8,154 -8,46"/><polygon class="rim" pathLength="1" points="88,0 176,50 176,150 88,200 0,150 0,50"/></svg>';
+function presenterSlide(id){
+  defineSlide(id, S=>{
+    const P=(DATA.presenters||[]).slice(0,3), box=S.$('.intro'), n=P.length;
+    box.classList.add('n'+n); S.$('.hd .sub').textContent = n>1 ? 'ارائه‌دهندگان' : 'ارائه‌دهنده';
+    const cards=P.map(p=>{
+      const img = p.photo ? `<img src="${p.photo}" alt="${p.name}"${p.pos?` style="object-position:${p.pos}"`:''}>` : SIL;
+      const c=el('div','pc',`<div class="ph"><div class="bgx">${img}</div>${HEXF}</div>
+        <div class="meta"><div class="nm">${p.name}</div>${n===1?'<i class="acc"></i>':''}<div class="tt">${p.title}</div></div>`);
+      c.setAttribute('data-r',''); box.append(c); return c;
+    });
+    cards.forEach((c,i)=>c.addEventListener('click',e=>{ if(n>1){ e.stopPropagation(); S.goStep(i+1); } }));
+    return { steps: n>1 ? n+1 : 1,
+      show(k){ box.classList.toggle('focus',k>0); cards.forEach((c,i)=>c.classList.toggle('on',k===i+1)); } };
+  });
+}
+presenterSlide('s-intro');
 
 /* ---- ساخت اسلایدها پس از ثبت همهٔ defineSlide ها ---- */
 const slides = $$('.slide').map((sec,idx)=>{
