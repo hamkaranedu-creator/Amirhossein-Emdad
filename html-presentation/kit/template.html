@@ -749,25 +749,12 @@ html,body{background:linear-gradient(#24124F,#150A2E);font-family:'sg-kara','SG 
 .ft{background-color:var(--glass);border-color:var(--glass-b)}
 .src .ltr{white-space:nowrap}
 
-
-/* نمادهای رویداد از تصویر کلیدی: ستارهٔ چهارگوش سه‌بعدی و شش‌ضلعی/ستارهٔ شیشه‌ای */
-.h3d.v3{background-image:url(img/star-3d.webp);aspect-ratio:414/420}
-.h3d.v3 .hxl{display:none}
-.gls{position:absolute;pointer-events:none;overflow:visible;transform:rotate(var(--r,0deg));filter:drop-shadow(0 30px 40px rgba(10,4,30,.55));animation:gfl 8s ease-in-out infinite}
-.gls .ex{fill:rgba(139,47,232,.30)}
-.gls .fc{fill:url(#gGlass);stroke:url(#gGlassEdge);stroke-width:2;stroke-linejoin:round}
-.gls .hi{fill:none;stroke:rgba(255,255,255,.22);stroke-width:1;stroke-linejoin:round}
-.g-hex{animation-delay:-3s}
-.s3d{position:absolute;aspect-ratio:414/420;background:url(img/star-3d.webp) center/contain no-repeat;filter:drop-shadow(0 20px 30px rgba(10,4,30,.6));animation:gfl 7s ease-in-out infinite -1.5s;pointer-events:none}
-@keyframes gfl{50%{translate:0 -12px}}
-
 @media (prefers-reduced-motion:reduce){
   *{animation-duration:.01s!important;animation-iteration-count:1!important;transition-duration:.01s!important;transition-delay:0s!important}
 }
 </style>
 </head>
 <body>
-<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs><linearGradient id="gGlass" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#fff" stop-opacity=".30"/><stop offset=".55" stop-color="#C9A8FF" stop-opacity=".12"/><stop offset="1" stop-color="#8B2FE8" stop-opacity=".22"/></linearGradient><linearGradient id="gGlassEdge" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#fff" stop-opacity=".95"/><stop offset=".5" stop-color="#E6CFFF" stop-opacity=".45"/><stop offset="1" stop-color="#A855F7" stop-opacity=".9"/></linearGradient></defs></svg>
 <div id="bg"><canvas id="mesh"></canvas></div>
 <svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
   <linearGradient id="gShield" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#6A2FE0"/><stop offset=".6" stop-color="#A850F0"/><stop offset="1" stop-color="#E060E0"/></linearGradient>
@@ -783,7 +770,6 @@ html,body{background:linear-gradient(#24124F,#150A2E);font-family:'sg-kara','SG 
 
   <!-- ۱) جلد — گام‌ها: عنوان ← «ثبت» به «اقدام» ← معرفی -->
   <section class="slide cover" id="s-title" data-title="جلد">
-    <svg class="gls g-star" style="left:1470px;top:96px;width:240px;--r:14deg" viewBox="-6 -6 116 116" aria-hidden="true"><path class="ex" d="M50 3Q57 43 97 50Q57 57 50 97Q43 57 3 50Q43 43 50 3Z" transform="translate(5 6)"/><path class="fc" d="M50 3Q57 43 97 50Q57 57 50 97Q43 57 3 50Q43 43 50 3Z"/><path class="hi" d="M50 3Q57 43 97 50Q57 57 50 97Q43 57 3 50Q43 43 50 3Z" transform="translate(50 50) scale(.86) translate(-50 -50)"/></svg><svg class="gls g-hex" style="left:190px;top:660px;width:270px;--r:-12deg" viewBox="-6 -6 116 116" aria-hidden="true"><path class="ex" d="M50 4L92 27L92 73L50 96L8 73L8 27Z" transform="translate(5 6)"/><path class="fc" d="M50 4L92 27L92 73L50 96L8 73L8 27Z"/><path class="hi" d="M50 4L92 27L92 73L50 96L8 73L8 27Z" transform="translate(50 50) scale(.86) translate(-50 -50)"/></svg><span class="s3d" style="left:1580px;top:720px;width:120px" aria-hidden="true"></span>
     <div class="ring" aria-hidden="true"><svg viewBox="0 0 1000 960">
       <polygon points="500,30 950,260 950,700 500,930 50,700 50,260"/><polygon points="500,30 950,260 950,700 500,930 50,700 50,260"/><polygon points="500,30 950,260 950,700 500,930 50,700 50,260"/></svg></div>
     <svg class="shield" viewBox="0 0 1000 960" aria-hidden="true">
@@ -1005,7 +991,6 @@ html,body{background:linear-gradient(#24124F,#150A2E);font-family:'sg-kara','SG 
   </section>
   <!-- ۲۵) پایان — گام‌ها: عنوان ← سپاس و پرسش و پاسخ -->
   <section class="slide cover" id="s-end" data-title="پایان">
-    <svg class="gls g-star" style="left:1470px;top:96px;width:240px;--r:14deg" viewBox="-6 -6 116 116" aria-hidden="true"><path class="ex" d="M50 3Q57 43 97 50Q57 57 50 97Q43 57 3 50Q43 43 50 3Z" transform="translate(5 6)"/><path class="fc" d="M50 3Q57 43 97 50Q57 57 50 97Q43 57 3 50Q43 43 50 3Z"/><path class="hi" d="M50 3Q57 43 97 50Q57 57 50 97Q43 57 3 50Q43 43 50 3Z" transform="translate(50 50) scale(.86) translate(-50 -50)"/></svg><svg class="gls g-hex" style="left:190px;top:660px;width:270px;--r:-12deg" viewBox="-6 -6 116 116" aria-hidden="true"><path class="ex" d="M50 4L92 27L92 73L50 96L8 73L8 27Z" transform="translate(5 6)"/><path class="fc" d="M50 4L92 27L92 73L50 96L8 73L8 27Z"/><path class="hi" d="M50 4L92 27L92 73L50 96L8 73L8 27Z" transform="translate(50 50) scale(.86) translate(-50 -50)"/></svg><span class="s3d" style="left:1580px;top:720px;width:120px" aria-hidden="true"></span>
     <div class="ring" aria-hidden="true"><svg viewBox="0 0 1000 960">
       <polygon points="500,30 950,260 950,700 500,930 50,700 50,260"/><polygon points="500,30 950,260 950,700 500,930 50,700 50,260"/><polygon points="500,30 950,260 950,700 500,930 50,700 50,260"/></svg></div>
     <svg class="shield" viewBox="0 0 1000 960" aria-hidden="true">
@@ -1915,7 +1900,7 @@ function hxl(icon){
     <g class="ic" transform="translate(52,58) scale(2)">${ICONS[icon]||''}</g></svg>`;
 }
 /* شش‌ضلعی سه‌بعدی قالب رویداد با آیکن خطی سفید؛ v: ۰ سبز-یاسی، ۱ سرخابی، ۲ هلویی */
-function h3d(icon,v=0){ return `<span class="h3d v${v%4}"><svg class="hxl" viewBox="0 0 48 48" aria-hidden="true"><g class="ic">${ICONS[icon]||''}</g></svg></span>`; }
+function h3d(icon,v=0){ return `<span class="h3d v${v%3}"><svg class="hxl" viewBox="0 0 48 48" aria-hidden="true"><g class="ic">${ICONS[icon]||''}</g></svg></span>`; }
 const pulseIn = nodes => nodes.forEach(x=>{ x.classList.remove('pane-in'); void x.offsetWidth; x.classList.add('pane-in'); });
 const svgEl=(tag,attrs,parent)=>{ const e=document.createElementNS(NS,tag); if(attrs) for(const k in attrs) e.setAttribute(k,attrs[k]); if(parent) parent.append(e); return e; };
 /* روشن‌کردن پیاپی: عنصر i از گام from+i روشن می‌شود و فقط آخرین، «جاری» است */
@@ -2072,7 +2057,7 @@ defineSlide('s-gov', S=>{
   const svg=document.createElementNS(NS,'svg'); svg.setAttribute('viewBox',`0 0 ${W} ${H}`); svg.setAttribute('class','br');
   const brs=ROWY.map((y,i)=>{ const p=document.createElementNS(NS,'path'); p.setAttribute('d',`M1448,165 C1385,165 1385,${y} 1322,${y}`); p.style.setProperty('--lc',R.levels[i].color); svg.append(p); return p; });
   rt.append(svg);
-  const origin=el('div','origin',`<span class="hxl-w">${h3d('agent',3)}</span><b>AI</b><small>پیشنهاد می‌دهد</small>`); rt.append(origin);
+  const origin=el('div','origin',`<span class="hxl-w">${h3d('agent',1)}</span><b>AI</b><small>پیشنهاد می‌دهد</small>`); rt.append(origin);
   const lanesBox=el('div','rlanes'); rt.append(lanesBox);
   const lanes=R.levels.map((l,i)=>{
     const n=el('button','rl',`<span class="hxl-w">${hxl(l.icon)}</span><span class="t2"><div class="en">${l.en}</div><div class="act">${l.act}</div></span><span class="land"></span>`);
@@ -2180,7 +2165,7 @@ defineSlide('s-enablers', S=>{
   const pz=Array.from({length:46},()=>{ const a=Math.random()*6.283, r=80+Math.random()*120;
     const c=svgEl('circle',{class:'pz',r:(2+Math.random()*3).toFixed(1)},svg); c.style.transform=`translate(${X[0]}px,${Y}px)`;
     return {c, ex:X[0]+Math.cos(a)*r, ey:Y+Math.sin(a)*r*.75, d:(Math.random()*.35).toFixed(2)}; });
-  const N=DATA.chain.map((c,i)=>{ const d=el('div','cn'+(i===3?' final':''),`<span class="hxl-w">${i===1?h3d(c.icon,3):hxl(c.icon)}</span><b class="${/[a-z]/i.test(c.label)?'':'fa'}">${c.label}</b>`);
+  const N=DATA.chain.map((c,i)=>{ const d=el('div','cn'+(i===3?' final':''),`<span class="hxl-w">${hxl(c.icon)}</span><b class="${/[a-z]/i.test(c.label)?'':'fa'}">${c.label}</b>`);
     d.style.left=X[i]+'px'; d.style.top=Y+'px'; box.append(d); return d; });
   const take=S.$('#entake');
   function parts(st){ pz.forEach(p=>{ p.c.style.transitionDelay=p.d+'s';
@@ -2370,7 +2355,7 @@ defineSlide('s-hitl', S=>{
     const t=svgEl('text',{class:'hlt',x:840,y:ty,'text-anchor':'middle'},svg); t.textContent=H.arcs[i];
     const dot=svgEl('circle',{class:'hld',r:7},svg); svgEl('animateMotion',{dur:'2.6s',repeatCount:'indefinite',path:d},dot);
     return [p,hd,t,dot]; });
-  const nodes=H.nodes.map((h,i)=>{ const d=el('div','hn'+(i===2?' out':''),`<span class="hxl-w">${i===0?h3d(h.icon,3):hxl(h.icon)}</span><b>${h.en}</b><span>${h.d}</span>`); d.style.left=P[i].x+'px'; d.style.top=P[i].y+'px'; box.append(d); return d; });
+  const nodes=H.nodes.map((h,i)=>{ const d=el('div','hn'+(i===2?' out':''),`<span class="hxl-w">${hxl(h.icon)}</span><b>${h.en}</b><span>${h.d}</span>`); d.style.left=P[i].x+'px'; d.style.top=P[i].y+'px'; box.append(d); return d; });
   return { steps:5, show(n){ seq([nodes[0]],n,1); seq([nodes[1]],n,2); seq([nodes[2]],n,4); arcs[0].forEach(x=>x.classList.toggle('on',n>=2)); arcs[1].forEach(x=>x.classList.toggle('on',n>=3)); } };
 });
 
